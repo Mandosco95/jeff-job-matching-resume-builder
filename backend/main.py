@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException, UploadFile, File, Form
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, Dict
 import os
 import io
 from dotenv import load_dotenv
@@ -48,6 +48,19 @@ async def shutdown_db_client():
         logger.info("Closing MongoDB connection...")
         db.client.close()
         logger.info("MongoDB connection closed")
+
+@app.get("/health", tags=["Health"])
+async def health_check() -> Dict[str, str]:
+    """
+    Health check endpoint to verify the API is running.
+    
+    Returns:
+        Dict with status and message.
+    """
+    return {
+        "status": "healthy",
+        "message": "API is running"
+    }
 
 # User Models
 class UserCreate(BaseModel):
