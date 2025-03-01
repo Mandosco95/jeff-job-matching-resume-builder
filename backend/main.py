@@ -1,8 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from typing import List, Optional
-import random
-from datetime import datetime, timedelta
+from typing import Optional
 import os
 from dotenv import load_dotenv
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -16,8 +14,8 @@ logger = logging.getLogger(__name__)
 # Load environment variables
 load_dotenv()
 
-app = FastAPI(title="Streamlit Demo API", 
-              description="A simple API for demonstration with Streamlit",
+app = FastAPI(title="User Management API", 
+              description="Simple API for user management",
               version="1.0.0")
 
 # MongoDB connection
@@ -45,116 +43,45 @@ async def shutdown_db_client():
         db.client.close()
         logger.info("MongoDB connection closed")
 
-# Data models
-class DataPoint(BaseModel):
-    date: str
-    value: float
-    category: str
+# User Models
+class UserCreate(BaseModel):
+    name: str
 
-class DataResponse(BaseModel):
-    data: List[DataPoint]
-    count: int
-    message: str
+class UserResponse(BaseModel):
+    id: str
+    name: str
 
-class PredictionRequest(BaseModel):
-    input_value: float
-    category: str
-
-class PredictionResponse(BaseModel):
-    predicted_value: float
-    confidence: float
-    message: str
-
-# Available categories
-categories = ["A", "B", "C"]
-
-@app.get("/")
-def read_root():
-    return {"message": "Welcome to the Streamlit Demo API"}
-
-@app.get("/api/data", response_model=DataResponse)
-async def get_data(category: Optional[str] = None, limit: int = 50):
-    """Get sample data, optionally filtered by category"""
-    query = {}
-    if category:
-        if category not in categories:
-            raise HTTPException(status_code=400, detail=f"Category must be one of {categories}")
-        query["category"] = category
+@app.post("/api/users", response_model=UserResponse)
+async def create_user(user: UserCreate):
+    """Create a new user"""
+    # Insert user
+    result = await db.users.insert_one({"name": user.name})
     
-    cursor = db.data_points.find(query).limit(limit)
-    data = await cursor.to_list(length=limit)
-    
-    # Convert ObjectId to string for each document
-    for item in data:
-        item["_id"] = str(item["_id"])
-    
+    # Return created user
     return {
-        "data": data,
-        "count": len(data),
-        "message": f"Retrieved {len(data)} data points"
+        "id": str(result.inserted_id),
+        "name": user.name
     }
 
-@app.post("/api/data")
-async def create_data_point(data_point: DataPoint):
-    """Create a new data point"""
-    if data_point.category not in categories:
-        raise HTTPException(status_code=400, detail=f"Category must be one of {categories}")
-    
-    result = await db.data_points.insert_one(data_point.dict())
-    return {"id": str(result.inserted_id), "message": "Data point created successfully"}
-
-@app.post("/api/predict", response_model=PredictionResponse)
-def predict(request: PredictionRequest):
-    """Make a simple prediction based on input value"""
-    # This is a dummy prediction - in a real app, you'd use a model
-    predicted_value = request.input_value * 1.5 if request.category == "A" else request.input_value * 0.8
-    confidence = random.uniform(0.7, 0.99)
-    
-    return {
-        "predicted_value": round(predicted_value, 2),
-        "confidence": round(confidence, 4),
-        "message": f"Prediction for category {request.category} completed"
-    }
-
-@app.get("/api/categories")
-def get_categories():
-    """Get available categories"""
-    return {"categories": categories}
-
-@app.get("/api/health")
-async def health_check():
-    """Check the health of the API and database connection"""
+@app.put("/api/users/{user_id}", response_model=UserResponse)
+async def update_user(user_id: str, user: UserCreate):
+    """Update a user's name"""
     try:
-        await db.command("ping")
+        # Update user
+        result = await db.users.update_one(
+            {"_id": ObjectId(user_id)},
+            {"$set": {"name": user.name}}
+        )
+        
+        if result.modified_count == 0:
+            raise HTTPException(status_code=404, detail="User not found")
+        
         return {
-            "status": "healthy",
-            "database": "connected",
-            "timestamp": datetime.now().isoformat()
+            "id": user_id,
+            "name": user.name
         }
     except Exception as e:
-        logger.error(f"Health check failed: {str(e)}")
-        raise HTTPException(
-            status_code=503,
-            detail="Database connection failed"
-        )
-
-# Initialize sample data in MongoDB
-@app.on_event("startup")
-async def init_db():
-    # Check if we already have data
-    count = await db.data_points.count_documents({})
-    if count == 0:
-        # Generate sample data
-        sample_data = []
-        start_date = datetime.now() - timedelta(days=30)
-        for i in range(100):
-            sample_data.append({
-                "date": (start_date + timedelta(days=i//3)).strftime("%Y-%m-%d"),
-                "value": round(random.uniform(10, 100), 2),
-                "category": random.choice(categories)
-            })
-        # Insert sample data
-        await db.data_points.insert_many(sample_data)
+        raise HTTPException(status_code=400, detail=str(e))
 
 if __name__ == "__main__":
     import uvicorn
