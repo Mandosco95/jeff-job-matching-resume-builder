@@ -1,13 +1,39 @@
-# Streamlit Application
+# Job Matching Resume Builder
 
-A simple Streamlit application template to kickstart your data visualization and machine learning projects.
+A full-stack application for job matching and resume building.
 
-## Features
+## Project Structure
 
-- Interactive data visualization
-- User-friendly widgets
-- Responsive layout
+- `backend/`: FastAPI backend for the application
+- `frontend/`: Frontend for the application
 
-## Installation
+## Backend
 
-1. Clone this repository:
+The backend is built with FastAPI and provides APIs for data retrieval and predictions.
+
+To run the backend:
+
+```bash
+cd backend
+pip install -r requirements.txt
+python run.py
+```
+
+For more details, see the [Backend README](backend/README.md).
+
+## Frontend
+
+(Frontend details will be added here)
+
+## Development
+
+For development, you can install the development dependencies:
+
+```bash
+cd backend
+pip install -r requirements-dev.txt
+```
+
+## License
+
+(License information will be added here)
