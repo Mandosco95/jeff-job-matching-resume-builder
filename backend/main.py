@@ -1,11 +1,17 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, UploadFile, File, Form
 from pydantic import BaseModel
 from typing import Optional
 import os
+import io
 from dotenv import load_dotenv
 from motor.motor_asyncio import AsyncIOMotorClient
 from bson import ObjectId
 import logging
+
+# For file processing
+import PyPDF2
+import docx
+import tempfile
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -51,6 +57,12 @@ class UserResponse(BaseModel):
     id: str
     name: str
 
+class CVResponse(BaseModel):
+    id: str
+    filename: str
+    extracted_text: str
+    additional_info: str
+
 @app.post("/api/users", response_model=UserResponse)
 async def create_user(user: UserCreate):
     """Create a new user"""
@@ -82,6 +94,83 @@ async def update_user(user_id: str, user: UserCreate):
         }
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+# Function to extract text from different file formats
+def extract_text_from_file(file_content: bytes, filename: str) -> str:
+    """Extract text from PDF, DOCX, or TXT files"""
+    file_extension = filename.split('.')[-1].lower()
+    
+    try:
+        if file_extension == 'pdf':
+            # Process PDF file
+            pdf_reader = PyPDF2.PdfReader(io.BytesIO(file_content))
+            text = ""
+            for page_num in range(len(pdf_reader.pages)):
+                text += pdf_reader.pages[page_num].extract_text()
+            return text
+            
+        elif file_extension == 'docx':
+            # Process DOCX file
+            with tempfile.NamedTemporaryFile(delete=False) as temp:
+                temp.write(file_content)
+                temp_path = temp.name
+            
+            doc = docx.Document(temp_path)
+            text = "\n".join([paragraph.text for paragraph in doc.paragraphs])
+            
+            # Clean up temp file
+            os.unlink(temp_path)
+            return text
+            
+        elif file_extension == 'txt':
+            # Process TXT file
+            return file_content.decode('utf-8')
+            
+        else:
+            return f"Unsupported file format: {file_extension}"
+            
+    except Exception as e:
+        logger.error(f"Error extracting text from {filename}: {str(e)}")
+        return f"Error processing file: {str(e)}"
+
+@app.post("/api/cv", response_model=CVResponse)
+async def process_cv(
+    cv_file: UploadFile = File(...),
+    additional_info: str = Form(...)
+):
+    """
+    Process CV file and additional information
+    - Extract text from CV file (PDF, DOCX, or TXT)
+    - Save extracted text and additional info to MongoDB
+    """
+    try:
+        # Read file content
+        file_content = await cv_file.read()
+        
+        # Extract text from file
+        extracted_text = extract_text_from_file(file_content, cv_file.filename)
+        
+        # Save to MongoDB
+        cv_data = {
+            "filename": cv_file.filename,
+            "extracted_text": extracted_text,
+            "additional_info": additional_info,
+            "file_size": len(file_content),
+            "created_at": ObjectId().generation_time
+        }
+        
+        result = await db.cv_documents.insert_one(cv_data)
+        
+        return {
+            "id": str(result.inserted_id),
+            "filename": cv_file.filename,
+            "extracted_text": extracted_text,
+            "additional_info": additional_info
+        }
+        
+    except Exception as e:
+        logger.error(f"Error processing CV: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error processing CV: {str(e)}")
 
 if __name__ == "__main__":
     import uvicorn
