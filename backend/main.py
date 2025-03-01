@@ -146,7 +146,8 @@ async def process_cv(
     try:
         # Read file content
         file_content = await cv_file.read()
-        
+        # Print file content for debugging
+        print(f"File content: {file_content[:100]}...")  # Print first 100 bytes to avoid overwhelming logs
         # Extract text from file
         extracted_text = extract_text_from_file(file_content, cv_file.filename)
         
