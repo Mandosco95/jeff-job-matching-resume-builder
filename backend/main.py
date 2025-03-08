@@ -177,6 +177,17 @@ async def process_file_with_openai(file_content: bytes, filename: str, additiona
         logger.error(f"Error processing file with OpenAI: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
+async def store_resume_data(data: dict):
+    """
+    Store the processed resume data in MongoDB.
+    """
+    try:
+        # Insert the data into the 'resumes' collection
+        await db.resumes.insert_one(data)
+        logger.info(f"Stored resume data for file: {data['filename']}")
+    except Exception as e:
+        logger.error(f"Error storing resume data: {str(e)}")
+
 @app.post("/api/resume", response_model=ResumeResponse, tags=["Resume"])
 async def process_resume(
     background_tasks: BackgroundTasks,
@@ -203,16 +214,6 @@ async def process_resume(
     except Exception as e:
         logger.error(f"Error processing resume: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
-
-async def store_resume_data(data: dict):
-    """
-    Store the processed resume data in MongoDB.
-    """
-    try:
-        await db.resumes.insert_one(data)
-        logger.info(f"Stored resume data for file: {data['filename']}")
-    except Exception as e:
-        logger.error(f"Error storing resume data: {str(e)}")
 
 if __name__ == "__main__":
     import uvicorn
