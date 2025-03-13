@@ -79,6 +79,7 @@ class ResumeResponse(BaseModel):
     filename: str
     extracted_text: str
     parsed_data: dict
+    skills: list
     additional_info: Optional[str] = None
 
 async def process_file_with_openai(file_content: bytes, filename: str, additional_info: Optional[str] = None) -> dict:
@@ -111,7 +112,7 @@ async def process_file_with_openai(file_content: bytes, filename: str, additiona
                 - Personal Information (name, contact details)
                 - Education
                 - Work Experience
-                - Skills
+                - Skills (provide a clear, comma-separated list)
                 - Projects
                 - Certifications
                 Please structure the information clearly and maintain the original formatting where relevant."""
@@ -148,7 +149,7 @@ async def process_file_with_openai(file_content: bytes, filename: str, additiona
             structure_messages = [
                 {
                     "role": "system",
-                    "content": "You are a data structuring expert. Convert the following resume text into a structured JSON format with these categories: personal_info, education, work_experience, skills, projects, and certifications."
+                    "content": "You are a data structuring expert. Convert the following resume text into a structured JSON format with these categories: personal_info, education, work_experience, skills, projects, and certifications. Ensure skills are provided as a clear list."
                 },
                 {
                     "role": "user",
@@ -166,10 +167,13 @@ async def process_file_with_openai(file_content: bytes, filename: str, additiona
         except Exception as e:
             logger.error(f"Error structuring data: {str(e)}")
 
+        skills_list = parsed_data.get("skills", [])
+
         return {
             "filename": filename,
             "extracted_text": extracted_text,
             "parsed_data": parsed_data,
+            "skills": skills_list,
             "additional_info": additional_info
         }
 
