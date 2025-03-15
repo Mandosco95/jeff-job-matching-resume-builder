@@ -11,22 +11,13 @@ API_URL = os.getenv("API_URL", "http://localhost:8000")
 
 st.title("Ask AI")
 
-# Initialize session state for storing chat history and rerun flag
+# Initialize session state for storing chat history
 if 'chat_history' not in st.session_state:
     st.session_state['chat_history'] = []
-if 'rerun' not in st.session_state:
-    st.session_state['rerun'] = False
 
-# Display chat history
-for q, a in st.session_state['chat_history']:
-    st.write(f"**You:** {q}")
-    st.write(f"**AI:** {a}")
-
-# Input for user question
-question = st.text_input("Ask a question:")
-
-# Button to submit the question
-if st.button("Send") and not st.session_state['rerun']:
+# Function to handle sending a question
+def send_question():
+    question = st.session_state['question']
     if question:
         # Make a request to the backend API
         response = requests.post(
@@ -43,11 +34,13 @@ if st.button("Send") and not st.session_state['rerun']:
         # Update chat history
         st.session_state['chat_history'].append((question, answer))
         
-        # Set rerun flag to True
-        st.session_state['rerun'] = True
-        
-        # Force a rerun to update the UI
-        st.experimental_rerun()
+        # Clear the input question
+        st.session_state['question'] = ""
 
-# Reset rerun flag after rerun
-st.session_state['rerun'] = False 
+# Display chat history
+for q, a in st.session_state['chat_history']:
+    st.write(f"**You:** {q}")
+    st.write(f"**AI:** {a}")
+
+# Input for user question with a callback to send the question
+st.text_input("Ask a question:", key='question', on_change=send_question) 
