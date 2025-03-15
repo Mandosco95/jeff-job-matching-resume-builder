@@ -3,7 +3,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional, Dict
 import os
-import base64
 from dotenv import load_dotenv
 from motor.motor_asyncio import AsyncIOMotorClient
 from bson import ObjectId
@@ -16,13 +15,9 @@ from jobspy import scrape_jobs
 from fastapi.responses import JSONResponse
 import math
 from bson import json_util
+from utils.pdf_generator import PDFGenerator
+import base64
 
-# Add these imports at the top
-# from langchain.llms import OpenAI
-# from langchain.prompts import PromptTemplate
-# from reportlab.pdfgen import canvas
-from io import BytesIO
-import json
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -114,6 +109,9 @@ class JobResponse(BaseModel):
 
 class ChatRequest(BaseModel):
     question: str
+
+class CustomizeDocumentsRequest(BaseModel):
+    job_description: str
 
 async def process_file_with_openai(file_content: bytes, filename: str, additional_info: Optional[str] = None) -> dict:
     """
@@ -417,6 +415,122 @@ async def chat_with_resume(request: ChatRequest):
 
     except Exception as e:
         logger.error(f"Error in chat: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/customize-documents", tags=["Documents"])
+async def customize_documents(request: CustomizeDocumentsRequest):
+    try:
+        # 1. Get the user's resume data from MongoDB
+        # Fetch the last resume data from MongoDB
+        user_resume = await db.resumes.find().sort("_id", -1).limit(1).to_list(1)
+        if user_resume:
+            user_resume = user_resume[0]
+
+        if not user_resume:
+            raise HTTPException(status_code=404, detail="Resume not found")
+
+        # 2. Call OpenAI to customize resume
+        resume_messages = [
+            {
+                "role": "system",
+                "content": """You are an expert at creating professional resumes. Create a well-structured resume using this format:
+
+# [Full Name]
+[Phone] • [Email] • [Location] • [LinkedIn]
+
+## Professional Summary
+A concise, powerful summary of professional background and key strengths.
+
+## Work Experience
+[Company Name] - [Location]
+[Job Title]
+[Date Range]
+• Achievement-oriented bullet point
+• Another significant accomplishment
+• Quantifiable result or impact
+
+## Education
+[Degree] - [Institution]
+[Graduation Date]
+• Relevant coursework or achievements
+
+## Skills
+• Group related skills together
+• Technical skills
+• Soft skills
+
+## Projects (if applicable)
+[Project Name]
+• Key features or achievements
+• Technologies used
+
+## Certifications (if applicable)
+• Certification name and date
+"""
+            },
+            {
+                "role": "user",
+                "content": f"""Job Description: {request.job_description}
+                Original Resume: {json.dumps(user_resume['parsed_data'])}
+                Please create a professional, ATS-friendly resume following the format above."""
+            }
+        ]
+
+        resume_response = await client.chat.completions.create(
+            model="gpt-4o",
+            messages=resume_messages,
+            max_tokens=2000
+        )
+        
+        # 3. Call OpenAI to generate cover letter
+        cl_messages = [
+            {
+                "role": "system",
+                "content": """You are an expert at writing cover letters. 
+                Create a compelling cover letter in markdown format.
+                Use proper markdown formatting with sections:
+                # [Current Date]
+                
+                [Recipient's Name/Company]
+                [Company Address]
+                
+                Dear Hiring Manager,
+                
+                [Cover Letter Content in 3-4 paragraphs]
+                
+                Sincerely,
+                [Full Name]"""
+            },
+            {
+                "role": "user",
+                "content": f"""Job Description: {request.job_description}
+                Candidate Resume: {json.dumps(user_resume['parsed_data'])}
+                Please write a professional cover letter in markdown format."""
+            }
+        ]
+
+        cl_response = await client.chat.completions.create(
+            model="gpt-4o",
+            messages=cl_messages,
+            max_tokens=1000
+        )
+
+        # 4. Convert responses to PDFs
+        resume_pdf = PDFGenerator.create_pdf(resume_response.choices[0].message.content, is_resume=True)
+        cl_pdf = PDFGenerator.create_pdf(cl_response.choices[0].message.content, is_resume=False)
+
+        # Encode PDFs
+        resume_b64 = base64.b64encode(resume_pdf).decode()
+        cl_b64 = base64.b64encode(cl_pdf).decode()
+
+        return {
+            "success": True,
+            "cv_content": resume_b64,
+            "cover_letter_content": cl_b64
+        }
+
+    except Exception as e:
+        logger.error(f"Error customizing documents: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":

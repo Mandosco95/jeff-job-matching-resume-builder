@@ -12,3 +12,6 @@ httpx==0.26.0
 python-jose==3.3.0
 passlib==1.7.4
 python-jobspy==1.1.78
+reportlab==4.0.4
+markdown==3.4.3
+beautifulsoup4==4.12.2
