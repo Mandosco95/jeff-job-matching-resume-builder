@@ -165,6 +165,21 @@ def clean_job_data(job):
 def view_saved_jobs():
     st.title("Saved Jobs")
     
+    # Add clear jobs button in a container at the top
+    with st.container():
+        col1, col2, col3 = st.columns([2, 1, 2])
+        with col2:
+            if st.button("Clear All Jobs", type="primary", use_container_width=True):
+                try:
+                    response = requests.delete(f"{API_URL}/api/jobs/clear")
+                    if response.status_code == 200:
+                        st.success("Successfully cleared all jobs!")
+                        st.rerun()  # Rerun the app to refresh the jobs list
+                    else:
+                        st.error(f"Error clearing jobs: {response.text}")
+                except Exception as e:
+                    st.error(f"Error: {str(e)}")
+    
     try:
         # Add debug information
         st.info("Fetching jobs from database...")
