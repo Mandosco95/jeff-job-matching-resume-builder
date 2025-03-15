@@ -6,7 +6,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Ensure jobspy is installed
-RUN pip install jobspy==0.29.0
+# RUN pip install jobspy==0.29.0
 
 COPY . .
 
