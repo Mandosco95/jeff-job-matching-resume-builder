@@ -17,6 +17,13 @@ from fastapi.responses import JSONResponse
 import math
 from bson import json_util
 
+# Add these imports at the top
+# from langchain.llms import OpenAI
+# from langchain.prompts import PromptTemplate
+# from reportlab.pdfgen import canvas
+from io import BytesIO
+import json
+
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -361,6 +368,46 @@ async def clear_jobs_collection():
     except Exception as e:
         logger.error(f"Error clearing jobs collection: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+
+# @app.post("/customize-documents")
+# async def customize_documents(request: CustomizeDocumentsRequest):
+#     try:
+#         # Get user experience from database
+#         user_experience = await db.users.find_one(
+#             {"_id": ObjectId(request.user_id)},
+#             {"experience": 1, "education": 1, "skills": 1}
+#         )
+        
+#         if not user_experience:
+#             raise HTTPException(status_code=404, detail="User profile not found")
+        
+#         # Initialize document generator
+#         generator = DocumentGenerator()
+        
+#         # Generate customized content
+#         cv_content = generator.generate_cv(
+#             request.job_description,
+#             user_experience
+#         )
+        
+#         cover_letter_content = generator.generate_cover_letter(
+#             request.job_description,
+#             user_experience
+#         )
+        
+#         # Convert to PDFs
+#         cv_pdf = generator.create_pdf(cv_content, "cv")
+#         cover_letter_pdf = generator.create_pdf(cover_letter_content, "cover_letter")
+        
+#         return {
+#             "success": True,
+#             "cv_content": cv_pdf,
+#             "cover_letter_content": cover_letter_pdf
+#         }
+        
+#     except Exception as e:
+#         logger.error(f"Error customizing documents: {str(e)}")
+#         raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
     import uvicorn

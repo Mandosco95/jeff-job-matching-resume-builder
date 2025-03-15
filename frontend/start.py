@@ -10,7 +10,7 @@ print(f"Starting Streamlit on port: {port}")
 
 # Run Streamlit with the correct port
 subprocess.run([
-    'streamlit', 'run', 'app.py',
+    'streamlit', 'run', 'Personal_Info.py',
     '--server.port', port,
     '--server.address=0.0.0.0'
-]) 
+])

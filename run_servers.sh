@@ -10,7 +10,7 @@ deactivate
 # Run Frontend
 echo "Starting Frontend Server..."
 source frontend/venv/bin/activate
-streamlit run frontend/app.py &
+streamlit run frontend/Personal_Info.py &
 FRONTEND_PID=$!
 deactivate
 
