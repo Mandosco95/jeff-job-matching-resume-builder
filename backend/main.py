@@ -112,6 +112,9 @@ class JobResponse(BaseModel):
     search_params: dict
     message: str
 
+class ChatRequest(BaseModel):
+    question: str
+
 async def process_file_with_openai(file_content: bytes, filename: str, additional_info: Optional[str] = None) -> dict:
     """
     Process the file content using OpenAI's API.
@@ -369,45 +372,52 @@ async def clear_jobs_collection():
         logger.error(f"Error clearing jobs collection: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-# @app.post("/customize-documents")
-# async def customize_documents(request: CustomizeDocumentsRequest):
-#     try:
-#         # Get user experience from database
-#         user_experience = await db.users.find_one(
-#             {"_id": ObjectId(request.user_id)},
-#             {"experience": 1, "education": 1, "skills": 1}
-#         )
-        
-#         if not user_experience:
-#             raise HTTPException(status_code=404, detail="User profile not found")
-        
-#         # Initialize document generator
-#         generator = DocumentGenerator()
-        
-#         # Generate customized content
-#         cv_content = generator.generate_cv(
-#             request.job_description,
-#             user_experience
-#         )
-        
-#         cover_letter_content = generator.generate_cover_letter(
-#             request.job_description,
-#             user_experience
-#         )
-        
-#         # Convert to PDFs
-#         cv_pdf = generator.create_pdf(cv_content, "cv")
-#         cover_letter_pdf = generator.create_pdf(cover_letter_content, "cover_letter")
-        
-#         return {
-#             "success": True,
-#             "cv_content": cv_pdf,
-#             "cover_letter_content": cover_letter_pdf
-#         }
-        
-#     except Exception as e:
-#         logger.error(f"Error customizing documents: {str(e)}")
-#         raise HTTPException(status_code=500, detail=str(e))
+@app.post("/api/chat", tags=["Chat"])
+async def chat_with_resume(request: ChatRequest):
+    """
+    Handle chat requests and generate responses based on the last resume data.
+    """
+    try:
+        question = request.question
+        # Fetch the last resume data from MongoDB
+        user_resume = await db.resumes.find().sort("_id", -1).limit(1).to_list(1)
+        if not user_resume:
+            raise HTTPException(status_code=404, detail="No resume found")
+
+        # Extract the resume data
+        resume_data = user_resume[0]['parsed_data']
+
+        # Prepare messages for OpenAI
+        messages = [
+            {
+                "role": "system",
+                "content": "You are an AI assistant that provides answers based on the user's resume."
+            },
+            {
+                "role": "user",
+                "content": question
+            },
+            {
+                "role": "assistant",
+                "content": f"Resume details: {resume_data}"
+            }
+        ]
+
+        # Call OpenAI API
+        response = await client.chat.completions.create(
+            model="gpt-4o",
+            messages=messages,
+            max_tokens=150
+        )
+
+        # Extract the response text
+        answer = response.choices[0].message.content
+
+        return {"answer": answer}
+
+    except Exception as e:
+        logger.error(f"Error in chat: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
     import uvicorn
