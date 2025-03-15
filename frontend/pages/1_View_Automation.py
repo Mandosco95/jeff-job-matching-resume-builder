@@ -2,8 +2,15 @@ import streamlit as st
 import requests
 from datetime import datetime
 import math
+from dotenv import load_dotenv
+import os
 
-API_URL = "http://localhost:8000"
+# Load environment variables
+load_dotenv()
+
+# API URL
+API_URL = os.getenv("API_URL", "http://localhost:8000")
+
 
 st.title("View Automation")
 st.write("This section is under development.") 

@@ -1,7 +1,14 @@
 import streamlit as st
 import requests
+from dotenv import load_dotenv
+import os
 
-API_URL = "http://localhost:8000"
+# Load environment variables
+load_dotenv()
+
+# API URL
+API_URL = os.getenv("API_URL", "http://localhost:8000")
+
 
 def view_jobs():
     st.title("Job Listings")

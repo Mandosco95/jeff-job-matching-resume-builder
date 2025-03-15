@@ -1,6 +1,15 @@
 import streamlit as st
 import requests
 from api_client import APIClient
+from dotenv import load_dotenv
+import os
+
+# Load environment variables
+load_dotenv()
+
+# API URL
+API_URL = os.getenv("API_URL", "http://localhost:8000")
+
 
 st.set_page_config(
     page_title="Customizable CV & Cover Letter",
