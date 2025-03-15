@@ -11,6 +11,11 @@ import logging
 from openai import AsyncOpenAI
 import json
 import io
+from datetime import datetime, date
+from jobspy import scrape_jobs
+from fastapi.responses import JSONResponse
+import math
+from bson import json_util
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -81,6 +86,24 @@ class ResumeResponse(BaseModel):
     parsed_data: dict
     skills: list
     additional_info: Optional[str] = None
+
+class JobSearchParams(BaseModel):
+    """
+    Parameters for job search request
+    """
+    search_term: str
+    location: str = "United States"  # default location
+    results_wanted: int = 20  # default number of results
+    country_indeed: str = "USA"  # default country for Indeed
+
+class JobResponse(BaseModel):
+    """
+    Response model for job search results
+    """
+    total_jobs: int
+    timestamp: datetime
+    search_params: dict
+    message: str
 
 async def process_file_with_openai(file_content: bytes, filename: str, additional_info: Optional[str] = None) -> dict:
     """
@@ -217,6 +240,126 @@ async def process_resume(
         return result
     except Exception as e:
         logger.error(f"Error processing resume: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/jobs/search", response_model=JobResponse, tags=["Jobs"])
+async def search_and_store_jobs(params: JobSearchParams):
+    """
+    Search jobs from LinkedIn and Indeed, then store them in MongoDB.
+    """
+    try:
+        logger.info(f"Starting job search with parameters: {params.dict()}")
+        
+        # Scrape jobs using JobSpy (only LinkedIn and Indeed)
+        jobs = scrape_jobs(
+            site_name=["indeed", "linkedin"],
+            search_term=params.search_term,
+            location=params.location,
+            results_wanted=params.results_wanted,
+            country_indeed=params.country_indeed,
+            hours_old=72  # Get jobs posted in the last 72 hours
+        )
+
+        # Convert jobs to a list of dictionaries and add timestamp
+        jobs_list = jobs.to_dict(orient='records')
+        timestamp = datetime.utcnow()
+        
+        # Enhance job records with additional metadata and handle date serialization
+        enhanced_jobs = []
+        for job in jobs_list:
+            # Convert any date objects to datetime for MongoDB compatibility
+            job_dict = dict(job)  # Create a copy of the job dictionary
+            for key, value in job_dict.items():
+                if isinstance(value, date) and not isinstance(value, datetime):
+                    job_dict[key] = datetime.combine(value, datetime.min.time())
+            
+            job_dict['timestamp'] = timestamp
+            job_dict['search_term'] = params.search_term
+            job_dict['search_location'] = params.location
+            enhanced_jobs.append(job_dict)
+
+        # Store in MongoDB
+        if enhanced_jobs:
+            try:
+                await db.jobs.insert_many(enhanced_jobs)
+                logger.info(f"Successfully stored {len(enhanced_jobs)} jobs in database")
+            except Exception as e:
+                logger.error(f"Error storing jobs in database: {str(e)}")
+                raise HTTPException(status_code=500, detail="Failed to store jobs in database")
+
+        return JobResponse(
+            total_jobs=len(enhanced_jobs),
+            timestamp=timestamp,
+            search_params=params.dict(),
+            message=f"Successfully scraped and stored {len(enhanced_jobs)} jobs"
+        )
+
+    except Exception as e:
+        logger.error(f"Error in job search: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+def clean_mongo_data(data):
+    """Clean MongoDB data by handling NaN values, ObjectId, and dates."""
+    if isinstance(data, dict):
+        return {k: clean_mongo_data(v) for k, v in data.items()}
+    elif isinstance(data, list):
+        return [clean_mongo_data(item) for item in data]
+    elif isinstance(data, float) and (math.isnan(data) or math.isinf(data)):
+        return None
+    elif isinstance(data, ObjectId):
+        return str(data)
+    elif isinstance(data, (datetime, date)):
+        return data.isoformat()
+    else:
+        return data
+
+@app.get("/api/jobs/recent", tags=["Jobs"])
+async def get_recent_jobs(
+    search_term: Optional[str] = None,
+    limit: int = 50
+):
+    """
+    Retrieve recent jobs from the database.
+    """
+    try:
+        # Build the query
+        query = {}
+        if search_term:
+            query["search_term"] = search_term
+
+        # Get jobs from MongoDB
+        cursor = db.jobs.find(query).sort("timestamp", -1).limit(limit)
+        jobs = await cursor.to_list(length=limit)
+        
+        # Clean the data directly without using dumps/loads
+        cleaned_jobs = clean_mongo_data(jobs)
+        
+        response_data = {
+            "total_jobs": len(cleaned_jobs),
+            "jobs": cleaned_jobs
+        }
+
+        # Use json_util.dumps to handle MongoDB-specific types
+        return JSONResponse(
+            content=json.loads(json_util.dumps(response_data))
+        )
+
+    except Exception as e:
+        logger.error(f"Error retrieving jobs: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.delete("/api/jobs/clear", tags=["Jobs"])
+async def clear_jobs_collection():
+    """
+    Clear all jobs from the database.
+    """
+    try:
+        result = await db.jobs.delete_many({})
+        return {
+            "message": f"Successfully deleted {result.deleted_count} jobs from the database"
+        }
+    except Exception as e:
+        logger.error(f"Error clearing jobs collection: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
