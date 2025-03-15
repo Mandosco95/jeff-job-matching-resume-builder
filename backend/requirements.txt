@@ -11,4 +11,4 @@ openai==1.12.0
 httpx==0.26.0
 python-jose==3.3.0
 passlib==1.7.4
-jobspy==0.29.0
+python-jobspy==1.1.78
