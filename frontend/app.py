@@ -200,6 +200,9 @@ def view_saved_jobs():
                 # Add search and filter options
                 search_term = st.text_input("Search in saved jobs", "")
                 
+                # Add remote jobs filter
+                show_remote_only = st.checkbox("Show Remote Jobs Only")
+                
                 # Add sorting options
                 sort_by = st.selectbox(
                     "Sort by",
@@ -209,10 +212,6 @@ def view_saved_jobs():
                 # Filter and sort jobs
                 jobs = [clean_job_data(job) for job in jobs_data["jobs"]]
                 
-                # Debug: Show sample job
-                if len(jobs) > 0:
-                    st.write("Sample job data:", jobs[0])
-                
                 # Apply search filter if search term is provided
                 if search_term:
                     jobs = [
@@ -220,6 +219,20 @@ def view_saved_jobs():
                         if search_term.lower() in str(job.get('title', '')).lower() or 
                            search_term.lower() in str(job.get('company', '')).lower() or
                            search_term.lower() in str(job.get('location', '')).lower()
+                    ]
+                
+                # Apply remote filter if checked
+                if show_remote_only:
+                    remote_keywords = ['remote', 'work from home', 'wfh', 'virtual', 'telecommute']
+                    jobs = [
+                        job for job in jobs
+                        if any(
+                            keyword in str(job.get('title', '')).lower() or
+                            keyword in str(job.get('description', '')).lower() or
+                            keyword in str(job.get('job_type', '')).lower() or
+                            keyword in str(job.get('location', '')).lower()
+                            for keyword in remote_keywords
+                        )
                     ]
                 
                 # Apply sorting
