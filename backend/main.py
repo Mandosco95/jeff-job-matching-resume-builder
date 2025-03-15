@@ -13,6 +13,13 @@ import PyPDF2
 import docx
 import tempfile
 
+# Add these imports at the top
+from langchain.llms import OpenAI
+from langchain.prompts import PromptTemplate
+from reportlab.pdfgen import canvas
+from io import BytesIO
+import json
+
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -75,6 +82,89 @@ class CVResponse(BaseModel):
     filename: str
     extracted_text: str
     additional_info: str
+
+class CustomizeDocumentsRequest(BaseModel):
+    job_description: str
+    user_id: str
+
+class DocumentGenerator:
+    def __init__(self):
+        self.llm = OpenAI(temperature=0.7)
+        
+        self.cv_prompt = PromptTemplate(
+            input_variables=["job_description", "user_experience"],
+            template="""
+            Based on the following job description:
+            {job_description}
+            
+            And the user's experience:
+            {user_experience}
+            
+            Generate a tailored CV that highlights relevant skills and experience.
+            Format the response as a JSON with sections: summary, skills, experience, education.
+            """
+        )
+        
+        self.cover_letter_prompt = PromptTemplate(
+            input_variables=["job_description", "user_experience"],
+            template="""
+            Based on the following job description:
+            {job_description}
+            
+            And the user's experience:
+            {user_experience}
+            
+            Write a compelling cover letter that demonstrates why the candidate is perfect for this role.
+            Format the response as a JSON with sections: opening, body_paragraphs, closing.
+            """
+        )
+    
+    def generate_cv(self, job_description: str, user_experience: dict) -> str:
+        prompt = self.cv_prompt.format(
+            job_description=job_description,
+            user_experience=json.dumps(user_experience)
+        )
+        response = self.llm(prompt)
+        return json.loads(response)
+    
+    def generate_cover_letter(self, job_description: str, user_experience: dict) -> str:
+        prompt = self.cover_letter_prompt.format(
+            job_description=job_description,
+            user_experience=json.dumps(user_experience)
+        )
+        response = self.llm(prompt)
+        return json.loads(response)
+    
+    def create_pdf(self, content: dict, document_type: str) -> bytes:
+        buffer = BytesIO()
+        c = canvas.Canvas(buffer)
+        
+        if document_type == "cv":
+            # Format CV PDF
+            c.drawString(100, 800, "Professional Summary")
+            c.drawString(100, 780, content["summary"])
+            
+            c.drawString(100, 740, "Skills")
+            y = 720
+            for skill in content["skills"]:
+                c.drawString(120, y, f"• {skill}")
+                y -= 20
+                
+            # Add other sections...
+            
+        else:  # cover letter
+            # Format Cover Letter PDF
+            c.drawString(100, 800, content["opening"])
+            
+            y = 760
+            for paragraph in content["body_paragraphs"]:
+                c.drawString(100, y, paragraph)
+                y -= 40
+                
+            c.drawString(100, y-20, content["closing"])
+        
+        c.save()
+        return buffer.getvalue()
 
 @app.post("/api/users", response_model=UserResponse)
 async def create_user(user: UserCreate):
@@ -185,6 +275,46 @@ async def process_cv(
     except Exception as e:
         logger.error(f"Error processing CV: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error processing CV: {str(e)}")
+
+@app.post("/customize-documents")
+async def customize_documents(request: CustomizeDocumentsRequest):
+    try:
+        # Get user experience from database
+        user_experience = await db.users.find_one(
+            {"_id": ObjectId(request.user_id)},
+            {"experience": 1, "education": 1, "skills": 1}
+        )
+        
+        if not user_experience:
+            raise HTTPException(status_code=404, detail="User profile not found")
+        
+        # Initialize document generator
+        generator = DocumentGenerator()
+        
+        # Generate customized content
+        cv_content = generator.generate_cv(
+            request.job_description,
+            user_experience
+        )
+        
+        cover_letter_content = generator.generate_cover_letter(
+            request.job_description,
+            user_experience
+        )
+        
+        # Convert to PDFs
+        cv_pdf = generator.create_pdf(cv_content, "cv")
+        cover_letter_pdf = generator.create_pdf(cover_letter_content, "cover_letter")
+        
+        return {
+            "success": True,
+            "cv_content": cv_pdf,
+            "cover_letter_content": cover_letter_pdf
+        }
+        
+    except Exception as e:
+        logger.error(f"Error customizing documents: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
     import uvicorn
