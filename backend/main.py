@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException, UploadFile, File, Form, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import Optional, Dict
+from typing import Optional, Dict, List
 import os
 from dotenv import load_dotenv
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -83,11 +83,12 @@ async def health_check() -> Dict[str, str]:
     }
 
 class ResumeResponse(BaseModel):
-    filename: str
-    extracted_text: str
     parsed_data: dict
-    skills: list
+    extracted_text: str
     additional_info: Optional[str] = None
+    skills_keywords: Optional[str] = None
+    filename: str
+    skills: List[str]
 
 class JobSearchParams(BaseModel):
     """
@@ -112,6 +113,10 @@ class ChatRequest(BaseModel):
 
 class CustomizeDocumentsRequest(BaseModel):
     job_description: str
+
+class ResumeRequest(BaseModel):
+    additional_info: Optional[str] = None
+    skills_keywords: Optional[str] = None
 
 async def process_file_with_openai(file_content: bytes, filename: str, additional_info: Optional[str] = None) -> dict:
     """
@@ -227,7 +232,8 @@ async def store_resume_data(data: dict):
 async def process_resume(
     background_tasks: BackgroundTasks,
     cv_file: UploadFile = File(...),
-    additional_info: Optional[str] = Form(None)
+    additional_info: Optional[str] = Form(None),
+    roles_keywords: Optional[str] = Form(None)
 ):
     """
     Process a resume file and extract information using OpenAI.
@@ -239,13 +245,30 @@ async def process_resume(
         # Process the file with OpenAI
         result = await process_file_with_openai(file_content, cv_file.filename, additional_info)
         
+        # Store in MongoDB with the new field
+        resume_data = {
+            "parsed_data": result["parsed_data"],
+            "extracted_text": result["extracted_text"],
+            "additional_info": additional_info,
+            "roles_keywords": roles_keywords,
+            "filename": cv_file.filename,
+            "skills": result["skills"]
+        }
+
         # Store in MongoDB asynchronously
         background_tasks.add_task(
             store_resume_data,
-            result
+            resume_data
         )
         
-        return result
+        return {
+            "parsed_data": result["parsed_data"],
+            "extracted_text": result["extracted_text"],
+            "additional_info": additional_info,
+            "roles_keywords": roles_keywords,
+            "filename": cv_file.filename,
+            "skills": result["skills"]
+        }
     except Exception as e:
         logger.error(f"Error processing resume: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))

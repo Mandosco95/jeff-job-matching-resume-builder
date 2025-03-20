@@ -91,6 +91,12 @@ def main():
         "Add any additional information you'd like the AI to consider:",
         height=100
     )
+
+    # Updated input field for roles keywords with new variable name
+    roles_keywords = st.text_input(
+        "Enter roles keywords you are looking for (space-separated):",
+        placeholder="e.g., Software Engineer Data Scientist Product Manager"
+    )
     
     # Submit button
     if st.button("Parse Resume", use_container_width=False):
@@ -98,7 +104,7 @@ def main():
             # First, clear all jobs
             with st.spinner("Clearing previous jobs..."):
                 try:
-                    # Call the clear jobs API - using the correct endpoint and method
+                    # Call the clear jobs API
                     clear_response = requests.delete(f"{API_URL}/api/jobs/clear")
                     if clear_response.status_code == 200:
                         st.success("Successfully cleared all jobs!")
@@ -117,7 +123,8 @@ def main():
                         'cv_file': (uploaded_file.name, uploaded_file.getvalue(), f'application/{uploaded_file.type}')
                     }
                     data = {
-                        'additional_info': additional_info if additional_info else ""
+                        'additional_info': additional_info if additional_info else "",
+                        'roles_keywords': roles_keywords if roles_keywords else ""
                     }
                     
                     # Make the API request
@@ -132,6 +139,9 @@ def main():
                         tab1, tab2 = st.tabs(["Parsed Data", "Raw Text"])
                         
                         with tab1:
+                            st.write(f"**Filename:** {result['filename']}")
+                            st.write("**Skills Keywords:** ", result['skills_keywords'] if result['skills_keywords'] else "None provided")
+                            st.write("**Detected Skills:** ", ", ".join(result['skills']))
                             display_resume_data(result["parsed_data"])
                         
                         with tab2:
