@@ -92,7 +92,7 @@ def main():
         height=100
     )
 
-    # Updated input field for roles keywords with new variable name
+    # Input field for roles keywords
     roles_keywords = st.text_input(
         "Enter roles keywords you are looking for (space-separated):",
         placeholder="e.g., Software Engineer Data Scientist Product Manager"
@@ -139,9 +139,6 @@ def main():
                         tab1, tab2 = st.tabs(["Parsed Data", "Raw Text"])
                         
                         with tab1:
-                            st.write(f"**Filename:** {result['filename']}")
-                            st.write("**Skills Keywords:** ", result['skills_keywords'] if result['skills_keywords'] else "None provided")
-                            st.write("**Detected Skills:** ", ", ".join(result['skills']))
                             display_resume_data(result["parsed_data"])
                         
                         with tab2:
@@ -150,6 +147,13 @@ def main():
                             if result.get("additional_info"):
                                 st.write("### Additional Information Provided")
                                 st.write(result["additional_info"])
+
+                        # Display job search results if available
+                        if "job_search" in result:
+                            if result["job_search"]["status"] == "success":
+                                st.success(result["job_search"]["message"])
+                            else:
+                                st.error(f"Job search error: {result['job_search']['message']}")
                     else:
                         st.error(f"Error: {response.status_code} - {response.text}")
                 except Exception as e:

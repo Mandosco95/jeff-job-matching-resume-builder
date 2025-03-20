@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, UploadFile, File, Form, BackgroundTasks
+from fastapi import FastAPI, HTTPException, UploadFile, File, Form, BackgroundTasks, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional, Dict, List
@@ -17,6 +17,8 @@ import math
 from bson import json_util
 from utils.pdf_generator import PDFGenerator
 import base64
+import requests
+import httpx
 
 
 # Configure logging
@@ -229,23 +231,23 @@ async def store_resume_data(data: dict):
         logger.error(f"Error storing resume data: {str(e)}")
 
 @app.post("/api/resume", response_model=ResumeResponse, tags=["Resume"])
-async def process_resume(
-    background_tasks: BackgroundTasks,
-    cv_file: UploadFile = File(...),
+async def parse_resume(
+    request: Request,
+    cv_file: UploadFile,
     additional_info: Optional[str] = Form(None),
     roles_keywords: Optional[str] = Form(None)
 ):
-    """
-    Process a resume file and extract information using OpenAI.
-    """
     try:
+        logger.info(f"Starting resume parsing for file: {cv_file.filename}")
+        logger.info(f"Roles keywords received: {roles_keywords}")
+
         # Read file content
         file_content = await cv_file.read()
         
         # Process the file with OpenAI
         result = await process_file_with_openai(file_content, cv_file.filename, additional_info)
         
-        # Store in MongoDB with the new field
+        # Store in MongoDB with the updated field name
         resume_data = {
             "parsed_data": result["parsed_data"],
             "extracted_text": result["extracted_text"],
@@ -255,12 +257,81 @@ async def process_resume(
             "skills": result["skills"]
         }
 
-        # Store in MongoDB asynchronously
-        background_tasks.add_task(
-            store_resume_data,
-            resume_data
-        )
+        # Insert into MongoDB
+        await db.resumes.insert_one(resume_data)
+        logger.info("Resume data saved to MongoDB")
+
+        # Automatically trigger job search if roles_keywords is provided
+        if roles_keywords:
+            logger.info(f"Initiating job search for roles: {roles_keywords}")
+            try:
+                base_url = str(request.base_url)
+                search_url = f"{base_url}api/jobs/search"
+                logger.info(f"Making request to: {search_url}")
+                
+                search_payload = {
+                    "search_term": roles_keywords,
+                    "location": "United States",
+                    "results_wanted": 20
+                }
+                logger.info(f"Search payload: {search_payload}")
+
+                async with httpx.AsyncClient() as client:
+                    search_response = await client.post(
+                        search_url,
+                        json=search_payload
+                    )
+                
+                logger.info(f"Job search API response status: {search_response.status_code}")
+                
+                if search_response.status_code == 200:
+                    search_result = search_response.json()
+                    logger.info("Job search completed successfully")
+                    # Include job search results in the response
+                    return {
+                        "parsed_data": result["parsed_data"],
+                        "extracted_text": result["extracted_text"],
+                        "additional_info": additional_info,
+                        "roles_keywords": roles_keywords,
+                        "filename": cv_file.filename,
+                        "skills": result["skills"],
+                        "job_search": {
+                            "status": "success",
+                            "message": search_result.get("message", "Jobs search completed")
+                        }
+                    }
+                else:
+                    logger.error(f"Job search failed with status {search_response.status_code}: {search_response.text}")
+                    return {
+                        "parsed_data": result["parsed_data"],
+                        "extracted_text": result["extracted_text"],
+                        "additional_info": additional_info,
+                        "roles_keywords": roles_keywords,
+                        "filename": cv_file.filename,
+                        "skills": result["skills"],
+                        "job_search": {
+                            "status": "error",
+                            "message": f"Job search failed: {search_response.text}"
+                        }
+                    }
+            except Exception as search_error:
+                logger.error(f"Error during job search: {str(search_error)}")
+                return {
+                    "parsed_data": result["parsed_data"],
+                    "extracted_text": result["extracted_text"],
+                    "additional_info": additional_info,
+                    "roles_keywords": roles_keywords,
+                    "filename": cv_file.filename,
+                    "skills": result["skills"],
+                    "job_search": {
+                        "status": "error",
+                        "message": str(search_error)
+                    }
+                }
+        else:
+            logger.info("No roles keywords provided, skipping job search")
         
+        # Return response without job search if no roles_keywords
         return {
             "parsed_data": result["parsed_data"],
             "extracted_text": result["extracted_text"],
@@ -269,8 +340,9 @@ async def process_resume(
             "filename": cv_file.filename,
             "skills": result["skills"]
         }
+
     except Exception as e:
-        logger.error(f"Error processing resume: {str(e)}")
+        logger.error(f"Error in resume parsing: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/jobs/search", response_model=JobResponse, tags=["Jobs"])
