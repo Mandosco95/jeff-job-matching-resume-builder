@@ -95,7 +95,21 @@ def main():
     # Submit button
     if st.button("Parse Resume", use_container_width=False):
         if uploaded_file is not None:
-            # Send to backend API
+            # First, clear all jobs
+            with st.spinner("Clearing previous jobs..."):
+                try:
+                    # Call the clear jobs API - using the correct endpoint and method
+                    clear_response = requests.delete(f"{API_URL}/api/jobs/clear")
+                    if clear_response.status_code == 200:
+                        st.success("Successfully cleared all jobs!")
+                    else:
+                        st.error(f"Error clearing jobs: {clear_response.status_code} - {clear_response.text}")
+                        return
+                except Exception as e:
+                    st.error(f"Error connecting to the clear jobs endpoint: {str(e)}")
+                    return
+
+            # Then proceed with resume parsing
             with st.spinner("Processing your resume..."):
                 try:
                     # Prepare the files and data for the API request

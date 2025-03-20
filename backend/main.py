@@ -260,12 +260,13 @@ async def search_and_store_jobs(params: JobSearchParams):
         
         # Scrape jobs using JobSpy (only LinkedIn and Indeed)
         jobs = scrape_jobs(
-            site_name=["indeed", "linkedin"],
+            site_name=["linkedin", "indeed"],
             search_term=params.search_term,
             location=params.location,
             results_wanted=params.results_wanted,
             country_indeed=params.country_indeed,
-            hours_old=72  # Get jobs posted in the last 72 hours
+            hours_old=72,  # Get jobs posted in the last 72 hours
+            linkedin_fetch_description=True
         )
 
         # Convert jobs to a list of dictionaries and add timestamp
