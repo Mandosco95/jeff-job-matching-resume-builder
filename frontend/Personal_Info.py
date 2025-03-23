@@ -74,7 +74,7 @@ def display_resume_data(data):
 
 
 def main():
-    st.header("Upload Your Resume")
+    st.title("Upload Your Resume")
     st.markdown("### Upload your resume and get it parsed using AI")
         
     # Direct CV upload without extra click

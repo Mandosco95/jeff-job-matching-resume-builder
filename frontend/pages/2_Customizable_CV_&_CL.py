@@ -19,7 +19,7 @@ st.set_page_config(
 )
 
 def customize_documents():
-    st.title("Customize your files based on the job")
+    st.title("Customize your files based on the job description")
     
     # Job description input
     job_description = st.text_area(
