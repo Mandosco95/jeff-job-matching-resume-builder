@@ -19,7 +19,10 @@ from utils.pdf_generator import PDFGenerator
 import base64
 import requests
 import httpx
-
+import constants
+import tempfile
+import subprocess
+import re
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -513,6 +516,54 @@ async def chat_with_resume(request: ChatRequest):
         logger.error(f"Error in chat: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
+def get_pdf_from_latex(latex_content: str) -> bytes:
+    """Convert LaTeX content to PDF using a temporary file."""
+    try:
+        match = re.search(r"```latex(.*?)```", latex_content, re.DOTALL)
+
+        if not match:
+            raise ValueError("LaTeX code block not found in the response.")
+
+        latex_content = match.group(1).strip()
+
+        # Create a temporary file
+        # Create a temporary directory to contain all LaTeX files
+        with tempfile.TemporaryDirectory() as temp_dir:
+            # Create temp file path in the temp directory
+            temp_file_path = os.path.join(temp_dir, 'resume.tex')
+            print(temp_file_path)
+            
+            # Write LaTeX content to file
+            with open(temp_file_path, 'w', encoding='utf-8') as temp_file:
+                temp_file.write(latex_content)
+
+            # Run pdflatex in the temp directory
+            process = subprocess.run(
+                ['pdflatex', '-interaction=nonstopmode', temp_file_path],
+                cwd=temp_dir,
+                capture_output=True,
+                text=True,
+                check=True
+            )
+            
+            # Get path to generated PDF
+            pdf_path = os.path.join(temp_dir, 'resume.pdf')
+            
+            print(pdf_path)
+            pdf_content = None
+            # Read the PDF if it exists
+            if os.path.exists(pdf_path):
+                with open(pdf_path, 'rb') as pdf_file:
+                    pdf_content = pdf_file.read()
+            else:
+                raise Exception("PDF file was not generated")
+                
+            return pdf_content
+    except Exception as e:
+        logger.error(f"Error converting LaTeX to PDF: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @app.post("/customize-documents", tags=["Documents"])
 async def customize_documents(request: CustomizeDocumentsRequest):
     try:
@@ -529,45 +580,12 @@ async def customize_documents(request: CustomizeDocumentsRequest):
         resume_messages = [
             {
                 "role": "system",
-                "content": """You are an expert at creating professional resumes. Create a well-structured resume using this format:
-
-# [Full Name]
-[Phone] • [Email] • [Location] • [LinkedIn]
-
-## Professional Summary
-A concise, powerful summary of professional background and key strengths.
-
-## Work Experience
-[Company Name] - [Location]
-[Job Title]
-[Date Range]
-• Achievement-oriented bullet point
-• Another significant accomplishment
-• Quantifiable result or impact
-
-## Education
-[Degree] - [Institution]
-[Graduation Date]
-• Relevant coursework or achievements
-
-## Skills
-• Group related skills together
-• Technical skills
-• Soft skills
-
-## Projects (if applicable)
-[Project Name]
-• Key features or achievements
-• Technologies used
-
-## Certifications (if applicable)
-• Certification name and date
-"""
+                "content": constants.RESUME_PROMPT
             },
             {
                 "role": "user",
                 "content": f"""Job Description: {request.job_description}
-                Original Resume: {json.dumps(user_resume['parsed_data'])}
+                Original Resume data: {json.dumps(user_resume['parsed_data'])}
                 Please create a professional, ATS-friendly resume following the format above."""
             }
         ]
@@ -582,26 +600,13 @@ A concise, powerful summary of professional background and key strengths.
         cl_messages = [
             {
                 "role": "system",
-                "content": """You are an expert at writing cover letters. 
-                Create a compelling cover letter in markdown format.
-                Use proper markdown formatting with sections:
-                # [Current Date]
-                
-                [Recipient's Name/Company]
-                [Company Address]
-                
-                Dear Hiring Manager,
-                
-                [Cover Letter Content in 3-4 paragraphs]
-                
-                Sincerely,
-                [Full Name]"""
+                "content": constants.COVER_LETTER_FORMAT
             },
             {
                 "role": "user",
                 "content": f"""Job Description: {request.job_description}
                 Candidate Resume: {json.dumps(user_resume['parsed_data'])}
-                Please write a professional cover letter in markdown format."""
+                Please write a professional cover letter in LaTeX format."""
             }
         ]
 
@@ -612,8 +617,8 @@ A concise, powerful summary of professional background and key strengths.
         )
 
         # 4. Convert responses to PDFs
-        resume_pdf = PDFGenerator.create_pdf(resume_response.choices[0].message.content, is_resume=True)
-        cl_pdf = PDFGenerator.create_pdf(cl_response.choices[0].message.content, is_resume=False)
+        resume_pdf = get_pdf_from_latex(resume_response.choices[0].message.content)
+        cl_pdf = get_pdf_from_latex(cl_response.choices[0].message.content)
 
         # Encode PDFs
         resume_b64 = base64.b64encode(resume_pdf).decode()
