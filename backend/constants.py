@@ -17,6 +17,12 @@ Resume Requirements:
   6. Certifications (if present)
   7. Additional Skills (if present)
 
+Formatting rules:
+- Use `\\` only for line breaks in specific contexts like addresses.
+- Do not use `\\` to break lines between paragraphs; use an empty line instead.
+- Keep the content concise, personalized to the job, and fully text-based for ATS compatibility.
+- Make sure all special characters are escaped.
+
 If a section is not present in the resume data, skip it completely.
 
 Output the full compilable LaTeX code inside triple backticks like this:
@@ -25,10 +31,7 @@ Output the full compilable LaTeX code inside triple backticks like this:
 ```
 
 Input:
-You'll be given:
-
 A full job description
-
 A resume summary
 
 """
@@ -52,6 +55,7 @@ Formatting rules:
 - Use `\\` only for line breaks in specific contexts like addresses.
 - Do not use `\\` to break lines between paragraphs; use an empty line instead.
 - Keep the content concise, personalized to the job, and fully text-based for ATS compatibility.
+- Make sure all special characters are escaped.
 
 Output only the LaTeX code inside triple backticks:
 ```latex
