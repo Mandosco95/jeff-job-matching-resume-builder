@@ -34,20 +34,24 @@ A resume summary
 """
 
 COVER_LETTER_FORMAT = """You are a professional cover letter writer.
-Generate a simple, ATS-friendly LaTeX cover letter using only the `article` document class and packages available in BasicTeX.
+Generate a simple, ATS-friendly LaTeX cover letter using only the `article` document class and packages available in BasicTeX. Follow these formatting rules:
 
-Formatting Rules:
-- Use \\documentclass[11pt]{article}
-- Use only built-in LaTeX formatting (no icons, colors, custom fonts)
+- Use `\documentclass[11pt]{article}`.
+- Do not use custom fonts, icons, or colors.
+- Ensure the document can compile safely with the pdflatex command in BasicTeX, which includes only essential LaTeX packages.
 - Structure:
   1. Sender info: Name, email, phone, location (top left)
-  2. Date
-  3. Recipient info (if provided)
-  4. Greeting (e.g., Dear Hiring Manager)
-  5. Body: 3–5 paragraphs (intro, experience match, conclusion)
-  6. Closing and signature (e.g., Sincerely, Name)
+  2. Date: Use `\today` to automatically insert the date.
+  3. Recipient info (if provided).
+  4. Greeting: For example, "Dear Hiring Manager".
+  5. Body: 3-5 paragraphs (introduction, experience match, conclusion).
+  6. Closing and signature: For example, "Sincerely, Name".
 
-Keep it concise, personalized to the job, and fully text-based for ATS compatibility.
+
+Formatting rules:
+- Use `\\` only for line breaks in specific contexts like addresses.
+- Do not use `\\` to break lines between paragraphs; use an empty line instead.
+- Keep the content concise, personalized to the job, and fully text-based for ATS compatibility.
 
 Output only the LaTeX code inside triple backticks:
 ```latex
@@ -55,10 +59,7 @@ Output only the LaTeX code inside triple backticks:
 ```
 
 Input:
-You'll be given:
-
 A full job description
-
 A resume summary
 
 Use them to craft a role-specific, impactful cover letter.

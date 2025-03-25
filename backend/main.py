@@ -516,7 +516,22 @@ async def chat_with_resume(request: ChatRequest):
         logger.error(f"Error in chat: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-def get_pdf_from_latex(latex_content: str) -> bytes:
+
+async def clean_latex_content_using_llm(latex_content: str) -> str:
+    """Clean LaTeX content using LLM."""
+    messages = [
+        {"role": "system", "content": "The following is a LaTeX document. While converting it to PDF, got some errors using pdflatex command. So I need you to clean it up such that it can be compiled using pdflatex command without any errors. Do not change the content, only clean it up. Only provide the cleaned up LaTeX code, nothing else. While cleaning make sure to remove all the errors and warnings that pdflatex command would throw. Remove unnecessary `\\` and `\\vspace` commands. Make sure to keep the content as is and only clean it up."},
+        {"role": "user", "content": latex_content}
+    ]
+    response = await client.chat.completions.create(
+        model="gpt-4o",
+        messages=messages,
+        max_tokens=1000
+    )
+    return response.choices[0].message.content
+
+
+async def get_pdf_from_latex(latex_content: str, retry: bool = True) -> bytes:
     """Convert LaTeX content to PDF using a temporary file."""
     try:
         match = re.search(r"```latex(.*?)```", latex_content, re.DOTALL)
@@ -560,7 +575,17 @@ def get_pdf_from_latex(latex_content: str) -> bytes:
                 
             return pdf_content
     except Exception as e:
+        if retry:
+            logger.info("Retrying after cleaning LaTeX content using LLM")
+            cleaned_latex_content = await clean_latex_content_using_llm(latex_content)
+            logger.info(f"Cleaned LaTeX content: {cleaned_latex_content}")
+            return await get_pdf_from_latex(cleaned_latex_content, retry=False)
+        print(latex_content)
+        import traceback
         logger.error(f"Error converting LaTeX to PDF: {str(e)}")
+        logger.error(traceback.format_exc())
+        logger.error(f"LaTeX content start: {latex_content[:100]}")
+        logger.error(f"LaTeX content end: {latex_content[-100:]}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -617,8 +642,8 @@ async def customize_documents(request: CustomizeDocumentsRequest):
         )
 
         # 4. Convert responses to PDFs
-        resume_pdf = get_pdf_from_latex(resume_response.choices[0].message.content)
-        cl_pdf = get_pdf_from_latex(cl_response.choices[0].message.content)
+        resume_pdf = await get_pdf_from_latex(resume_response.choices[0].message.content)
+        cl_pdf = await get_pdf_from_latex(cl_response.choices[0].message.content)
 
         # Encode PDFs
         resume_b64 = base64.b64encode(resume_pdf).decode()
