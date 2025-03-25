@@ -268,8 +268,8 @@ async def parse_resume(
         if roles_keywords:
             logger.info(f"Initiating job search for roles: {roles_keywords}")
             try:
-                base_url = str(request.base_url)
-                search_url = f"{base_url}api/jobs/search"
+                base_url = os.getenv("BACKEND_URL")
+                search_url = f"{base_url}/api/jobs/search"
                 logger.info(f"Making request to: {search_url}")
                 
                 search_payload = {
@@ -279,7 +279,7 @@ async def parse_resume(
                 }
                 logger.info(f"Search payload: {search_payload}")
 
-                async with httpx.AsyncClient() as client:
+                async with httpx.AsyncClient(follow_redirects=True) as client:
                     search_response = await client.post(
                         search_url,
                         json=search_payload
