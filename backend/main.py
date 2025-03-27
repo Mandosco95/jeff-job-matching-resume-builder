@@ -541,12 +541,11 @@ async def get_pdf_from_latex(latex_content: str, retry: bool = True) -> bytes:
 
         latex_content = match.group(1).strip()
 
-        # Create a temporary file
         # Create a temporary directory to contain all LaTeX files
         with tempfile.TemporaryDirectory() as temp_dir:
             # Create temp file path in the temp directory
             temp_file_path = os.path.join(temp_dir, 'resume.tex')
-            print(temp_file_path)
+            logger.info(f"Writing LaTeX content to: {temp_file_path}")
             
             # Write LaTeX content to file
             with open(temp_file_path, 'w', encoding='utf-8') as temp_file:
@@ -558,32 +557,40 @@ async def get_pdf_from_latex(latex_content: str, retry: bool = True) -> bytes:
                 cwd=temp_dir,
                 capture_output=True,
                 text=True,
-                check=True
+                check=False  # Don't raise exception immediately
             )
+            
+            # Log the output for debugging
+            if process.stdout:
+                logger.info(f"pdflatex stdout: {process.stdout}")
+            if process.stderr:
+                logger.error(f"pdflatex stderr: {process.stderr}")
+            
+            # Check if compilation was successful
+            if process.returncode != 0:
+                raise Exception(f"pdflatex compilation failed with return code {process.returncode}")
             
             # Get path to generated PDF
             pdf_path = os.path.join(temp_dir, 'resume.pdf')
+            logger.info(f"Looking for PDF at: {pdf_path}")
             
-            print(pdf_path)
-            pdf_content = None
             # Read the PDF if it exists
             if os.path.exists(pdf_path):
                 with open(pdf_path, 'rb') as pdf_file:
                     pdf_content = pdf_file.read()
+                logger.info("Successfully generated PDF")
+                return pdf_content
             else:
                 raise Exception("PDF file was not generated")
                 
-            return pdf_content
     except Exception as e:
         if retry:
             logger.info("Retrying after cleaning LaTeX content using LLM")
             cleaned_latex_content = await clean_latex_content_using_llm(latex_content)
             logger.info(f"Cleaned LaTeX content: {cleaned_latex_content}")
             return await get_pdf_from_latex(cleaned_latex_content, retry=False)
-        print(latex_content)
-        import traceback
+        
         logger.error(f"Error converting LaTeX to PDF: {str(e)}")
-        logger.error(traceback.format_exc())
         logger.error(f"LaTeX content start: {latex_content[:100]}")
         logger.error(f"LaTeX content end: {latex_content[-100:]}")
         raise HTTPException(status_code=500, detail=str(e))
