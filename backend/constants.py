@@ -40,13 +40,37 @@ Keyword and Content Requirements:
      * "Reduced false positive alerts by 35\\% through optimization of SIEM correlation rules (Splunk \\& ArcSight)."
      * "Conducted 10+ vulnerability assessments monthly using ACAS and OpenVAS, tracking POA\\&Ms through remediation cycles."
 
-3. Skills Section:
-   - Include exact keywords from the job description
-   - Group skills by category (Technical, Tools, Certifications, etc.)
-   - Use precise terminology (e.g., "RMF", "DIACAP", "STIGs", "SCAP", "ACAS")
-   - Include both technical and soft skills
+3. Skills Section (CRITICAL - Must Match Job Description):
+   - Group skills into these categories:
+     * Include some of the exact keywords from the job description
+     * Technical Skills (e.g., RMF, DIACAP, STIGs, SCAP, ACAS)
+     * Tools & Technologies (e.g., Splunk, QRadar, ArcSight, Nessus)
+     * Certifications (e.g., CISSP, CISM, Security+)
+     * Soft Skills (e.g., Leadership, Communication, Project Management)
+   - Requirements:
+     * Include EVERY relevant skill from the job description
+     * Use exact terminology from the job posting
+     * Prioritize skills that match the role's requirements
+     * Remove irrelevant skills that don't match the job context
+     * Include both technical and soft skills from the job description
+   - Examples:
+     * For a DoD role: "RMF, DIACAP, STIGs, SCAP, ACAS, NIST 800-53"
+     * For a SOC role: "SIEM, IDS/IPS, EDR, Threat Hunting, Incident Response"
+     * For a DevSecOps role: "CI/CD, Container Security, IaC, SAST/DAST"
 
-4. Soft Skills and Collaboration:
+4. Projects Section (If Relevant to Job):
+   - Include only projects that demonstrate relevant skills
+   - Each project must:
+     * Use terminology from the job description
+     * Show measurable impact
+     * Highlight relevant technical skills
+     * Demonstrate soft skills mentioned in the job posting
+   - Examples:
+     * For a DoD role: "Led RMF compliance project for 12 classified systems"
+     * For a SOC role: "Developed automated threat detection system reducing response time by 40\\%"
+     * For a DevSecOps role: "Implemented container security scanning in CI/CD pipeline"
+
+5. Soft Skills and Collaboration:
    - Include bullets demonstrating:
      * Communication with stakeholders
      * Cross-functional team collaboration
