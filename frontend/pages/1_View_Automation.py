@@ -32,22 +32,22 @@ def display_pdf_viewer(pdf_base64, title):
     st.markdown(pdf_display, unsafe_allow_html=True)
 
 def view_saved_jobs():
-    st.header("Saved Jobs")
+    # st.header("Saved Jobs")
     
     # Add clear jobs button in a container at the top
-    with st.container():
-        col1, col2, col3 = st.columns([2, 1, 2])
-        with col2:
-            if st.button("Clear All Jobs", type="primary", use_container_width=True):
-                try:
-                    response = requests.delete(f"{API_URL}/api/jobs/clear")
-                    if response.status_code == 200:
-                        st.success("Successfully cleared all jobs!")
-                        st.rerun()  # Rerun the app to refresh the jobs list
-                    else:
-                        st.error(f"Error clearing jobs: {response.text}")
-                except Exception as e:
-                    st.error(f"Error: {str(e)}")
+    # with st.container():
+    #     col1, col2, col3 = st.columns([2, 1, 2])
+    #     with col2:
+    #         if st.button("Clear All Jobs", type="primary", use_container_width=True):
+    #             try:
+    #                 response = requests.delete(f"{API_URL}/api/jobs/clear")
+    #                 if response.status_code == 200:
+    #                     st.success("Successfully cleared all jobs!")
+    #                     st.rerun()  # Rerun the app to refresh the jobs list
+    #                 else:
+    #                     st.error(f"Error clearing jobs: {response.text}")
+    #             except Exception as e:
+    #                 st.error(f"Error: {str(e)}")
     
     try:
         # Fetch all jobs from the database
@@ -60,51 +60,51 @@ def view_saved_jobs():
             
             if jobs_data["total_jobs"] > 0:
                 # Add search and filter options
-                search_term = st.text_input("Search in saved jobs", "")
+                # search_term = st.text_input("Search in saved jobs", "")
                 
                 # Add remote jobs filter
-                show_remote_only = st.checkbox("Show Remote Jobs Only")
+                # show_remote_only = st.checkbox("Show Remote Jobs Only")
                 
                 # Add sorting options
-                sort_by = st.selectbox(
-                    "Sort by",
-                    ["Newest First", "Company Name", "Job Title"]
-                )
+                # sort_by = st.selectbox(
+                #     "Sort by",
+                #     ["Newest First", "Company Name", "Job Title"]
+                # )
                 
                 # Filter and sort jobs
                 jobs = [clean_job_data(job) for job in jobs_data["jobs"]]
                 
                 # Apply search filter if search term is provided
-                if search_term:
-                    jobs = [
-                        job for job in jobs
-                        if search_term.lower() in str(job.get('title', '')).lower() or 
-                           search_term.lower() in str(job.get('company', '')).lower() or
-                           search_term.lower() in str(job.get('location', '')).lower()
-                    ]
+                # if search_term:
+                #     jobs = [
+                #         job for job in jobs
+                #         if search_term.lower() in str(job.get('title', '')).lower() or 
+                #            search_term.lower() in str(job.get('company', '')).lower() or
+                #            search_term.lower() in str(job.get('location', '')).lower()
+                #     ]
                 
                 # Apply remote filter if checked
-                if show_remote_only:
-                    remote_keywords = ['remote', 'work from home', 'wfh', 'virtual', 'telecommute']
-                    jobs = [
-                        job for job in jobs
-                        if any(
-                            keyword in str(job.get('title', '')).lower() or
-                            keyword in str(job.get('description', '')).lower() or
-                            keyword in str(job.get('job_type', '')).lower() or
-                            keyword in str(job.get('location', '')).lower()
-                            for keyword in remote_keywords
-                        )
-                    ]
+                # if show_remote_only:
+                #     remote_keywords = ['remote', 'work from home', 'wfh', 'virtual', 'telecommute']
+                #     jobs = [
+                #         job for job in jobs
+                #         if any(
+                #             keyword in str(job.get('title', '')).lower() or
+                #             keyword in str(job.get('description', '')).lower() or
+                #             keyword in str(job.get('job_type', '')).lower() or
+                #             keyword in str(job.get('location', '')).lower()
+                #             for keyword in remote_keywords
+                #         )
+                #     ]
                 
                 # Apply sorting
-                if sort_by == "Company Name":
-                    jobs.sort(key=lambda x: str(x.get('company', '')).lower())
-                elif sort_by == "Job Title":
-                    jobs.sort(key=lambda x: str(x.get('title', '')).lower())
+                # if sort_by == "Company Name":
+                #     jobs.sort(key=lambda x: str(x.get('company', '')).lower())
+                # elif sort_by == "Job Title":
+                #     jobs.sort(key=lambda x: str(x.get('title', '')).lower())
                 
                 # Display total count
-                st.subheader(f"Found {len(jobs)} Saved Jobs")
+                st.markdown(f"<h4 style='font-size: 14px;'>Found {len(jobs)} Saved Jobs</h4>", unsafe_allow_html=True)
                 
                 # Display jobs in a clean format
                 for job in jobs:

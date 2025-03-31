@@ -158,6 +158,11 @@ Formatting rules:
 - Use proper paragraph spacing
 - Make sure all special characters are escaped
 - Ensure all LaTeX environments are properly closed
+- Use `\\today` for the date
+- For email addresses, use `\\@` to escape the @ symbol
+- For company information, use actual values or remove placeholders
+- Use `\\vspace{0.5em}` for paragraph spacing instead of empty lines
+- Use `\\par` to end paragraphs
 
 Example structure:
 ```latex
@@ -165,14 +170,35 @@ Example structure:
 \\usepackage[margin=1in]{geometry}
 
 \\begin{document}
+
 % Sender info
+Jeffrey Ezugwu \\\\
+Palmdale, CA \\\\
+jeffrey.ezugwu\\@gmail.com \\\\
+661-483-6808 \\\\
+\\vspace{1em}
+
 % Date
+\\today \\\\
+\\vspace{1em}
+
 % Recipient info
+Hiring Manager \\\\
+Company Name \\\\
+123 Business Street \\\\
+City, State 12345 \\\\
+\\vspace{1em}
+
 % Opening paragraph (hook)
 % Company-specific paragraph
 % Experience match paragraph
 % Closing paragraph
+
 % Signature
+\\vspace{2em}
+Sincerely, \\\\
+Jeffrey Ezugwu
+
 \\end{document}
 ```
 
