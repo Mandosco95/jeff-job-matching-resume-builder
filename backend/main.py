@@ -520,15 +520,74 @@ async def chat_with_resume(request: ChatRequest):
 async def clean_latex_content_using_llm(latex_content: str) -> str:
     """Clean LaTeX content using LLM."""
     messages = [
-        {"role": "system", "content": "The following is a LaTeX document. While converting it to PDF, got some errors using pdflatex command. So I need you to clean it up such that it can be compiled using pdflatex command without any errors. Do not change the content, only clean it up. Only provide the cleaned up LaTeX code, nothing else. While cleaning make sure to remove all the errors and warnings that pdflatex command would throw. Remove unnecessary `\\` and `\\vspace` commands. Make sure to keep the content as is and only clean it up."},
-        {"role": "user", "content": latex_content}
+        {
+            "role": "system",
+            "content": """You are a LaTeX cleaning expert. Your task is to clean up LaTeX content to ensure it compiles correctly.
+            Follow these critical rules:
+            1. Escape all special characters:
+               - \\& for ampersands (e.g., A\\&A, R\\&D)
+               - \\% for percentage signs
+               - \\# for hash symbols
+               - \\$ for dollar signs
+               - \\_ for underscores
+               - \\{ and \\} for curly braces
+               - \\~ for tildes
+               - \\^ for carets
+               - \\textbackslash for backslashes
+            
+            2. Ensure document completeness:
+               - Must start with \\documentclass
+               - Must end with \\end{document}
+               - All environments must be properly closed
+               - No truncated content
+            
+            3. Fix common issues:
+               - Remove unnecessary \\vspace commands
+               - Fix misplaced alignment tab characters (&)
+               - Ensure proper paragraph spacing
+               - Close all itemize environments
+            
+            4. Keep only essential packages:
+               - geometry (for margins)
+               - No other packages allowed
+            
+            Return ONLY the cleaned LaTeX code within the code block, nothing else."""
+        },
+        {
+            "role": "user",
+            "content": latex_content
+        }
     ]
-    response = await client.chat.completions.create(
-        model="gpt-4o",
-        messages=messages,
-        max_tokens=1000
-    )
-    return response.choices[0].message.content
+    
+    try:
+        response = await client.chat.completions.create(
+            model="gpt-4o",
+            messages=messages,
+            max_tokens=2000  # Increased to handle larger documents
+        )
+        
+        cleaned_content = response.choices[0].message.content
+        
+        # Verify the cleaned content is properly formatted
+        if not cleaned_content.startswith("```latex"):
+            cleaned_content = "```latex\n" + cleaned_content
+        if not cleaned_content.endswith("```"):
+            cleaned_content = cleaned_content + "\n```"
+            
+        # Verify document structure
+        if "\\documentclass" not in cleaned_content:
+            raise ValueError("Cleaned content missing document class")
+        if "\\end{document}" not in cleaned_content:
+            raise ValueError("Cleaned content missing document end")
+            
+        return cleaned_content
+        
+    except Exception as e:
+        logger.error(f"Error cleaning LaTeX content: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to clean LaTeX content: {str(e)}"
+        )
 
 
 async def get_pdf_from_latex(latex_content: str, retry: bool = True) -> bytes:

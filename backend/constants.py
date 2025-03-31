@@ -26,7 +26,7 @@ Keyword and Content Requirements:
    - Create a 2-3 sentence summary that positions the candidate as a strong match
    - Include exact keywords from the job description
    - Emphasize years of experience and key qualifications
-   - Example: "Cybersecurity Engineer with 6+ years of DoD experience supporting RMF, A&A documentation, and secure systems design."
+   - Example: "Cybersecurity Engineer with 6+ years of DoD experience supporting RMF, A\\&A documentation, and secure systems design."
 
 2. Experience Section:
    - Minimum 8 bullet points per role
@@ -36,9 +36,9 @@ Keyword and Content Requirements:
      * Show measurable results or impact
      * Use exact terminology from the job description
    - Examples:
-     * "Led RMF compliance for 12 classified systems, coordinating A&A documentation and STIG implementation across three teams."
-     * "Reduced false positive alerts by 35% through optimization of SIEM correlation rules (Splunk & ArcSight)."
-     * "Conducted 10+ vulnerability assessments monthly using ACAS and OpenVAS, tracking POA&Ms through remediation cycles."
+     * "Led RMF compliance for 12 classified systems, coordinating A\\&A documentation and STIG implementation across three teams."
+     * "Reduced false positive alerts by 35\\% through optimization of SIEM correlation rules (Splunk \\& ArcSight)."
+     * "Conducted 10+ vulnerability assessments monthly using ACAS and OpenVAS, tracking POA\\&Ms through remediation cycles."
 
 3. Skills Section:
    - Include exact keywords from the job description
@@ -55,17 +55,29 @@ Keyword and Content Requirements:
    - Examples:
      * "Presented system security posture reports to senior stakeholders and security leadership."
      * "Collaborated with cross-functional DevOps teams to ensure secure deployment pipelines."
-     * "Documented and maintained detailed A&A packages in accordance with RMF and organizational policies."
+     * "Documented and maintained detailed A\\&A packages in accordance with RMF and organizational policies."
+
+CRITICAL CHARACTER ESCAPING:
+- Always escape special characters:
+  * \\& for ampersands (e.g., A\\&A, R\\&D)
+  * \\% for percentage signs
+  * \\# for hash symbols
+  * \\$ for dollar signs
+  * \\_ for underscores
+  * \\{ and \\} for curly braces
+  * \\~ for tildes
+  * \\^ for carets
+  * \\textbackslash for backslashes
 
 Formatting rules:
-- Use `\\` only for line breaks in specific contexts like addresses.
-- Do not use `\\` to break lines between paragraphs; use an empty line instead.
-- Keep the content concise, personalized to the job, and fully text-based for ATS compatibility.
-- Make sure all special characters are escaped.
-- Ensure all LaTeX environments (itemize, etc.) are properly closed.
-- Complete all sections with proper LaTeX formatting.
-- Use simple \\begin{itemize} and \\end{itemize} without parameters.
-- Do not use any special formatting packages.
+- Use `\\` only for line breaks in specific contexts like addresses
+- Do not use `\\` to break lines between paragraphs; use an empty line instead
+- Keep the content concise, personalized to the job, and fully text-based for ATS compatibility
+- Make sure all special characters are escaped
+- Ensure all LaTeX environments (itemize, etc.) are properly closed
+- Complete all sections with proper LaTeX formatting
+- Use simple \\begin{itemize} and \\end{itemize} without parameters
+- Do not use any special formatting packages
 
 IMPORTANT: The output must be a complete, compilable LaTeX document with:
 1. All environments properly closed
