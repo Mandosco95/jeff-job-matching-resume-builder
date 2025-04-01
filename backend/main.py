@@ -535,19 +535,28 @@ async def clean_latex_content_using_llm(latex_content: str) -> str:
                - \\^ for carets
                - \\textbackslash for backslashes
             
-            2. Ensure document completeness:
+            2. Handle placeholders properly:
+               - Replace [Company Name] with \\textbf{Company Name}
+               - Replace [Company Address] with \\textbf{Company Address}
+               - Replace [City, State ZIP] with \\textbf{City, State ZIP}
+               - Replace [Hiring Manager] with \\textbf{Hiring Manager}
+               - Replace [Position] with \\textbf{Position}
+            
+            3. Ensure document completeness:
                - Must start with \\documentclass
                - Must end with \\end{document}
                - All environments must be properly closed
                - No truncated content
             
-            3. Fix common issues:
+            4. Fix common issues:
                - Remove unnecessary \\vspace commands
                - Fix misplaced alignment tab characters (&)
                - Ensure proper paragraph spacing
                - Close all itemize environments
+               - Use \\par for paragraph breaks
+               - Use \\vspace{1em} for vertical spacing
             
-            4. Keep only essential packages:
+            5. Keep only essential packages:
                - geometry (for margins)
                - No other packages allowed
             
@@ -659,13 +668,38 @@ async def get_pdf_from_latex(latex_content: str, retry: bool = True) -> bytes:
 async def customize_documents(request: CustomizeDocumentsRequest):
     try:
         # 1. Get the user's resume data from MongoDB
-        # Fetch the last resume data from MongoDB
         user_resume = await db.resumes.find().sort("_id", -1).limit(1).to_list(1)
         if user_resume:
             user_resume = user_resume[0]
 
         if not user_resume:
             raise HTTPException(status_code=404, detail="Resume not found")
+
+        # Extract name from resume data
+        name = user_resume['parsed_data'].get('personal_info', {}).get('name', '')
+        if not name:
+            raise HTTPException(status_code=400, detail="Name not found in resume data")
+
+        # Extract first and last name
+        name_parts = name.split()
+        if len(name_parts) < 2:
+            raise HTTPException(status_code=400, detail="Full name not found in resume data")
+        
+        fname = name_parts[0]
+        lname = name_parts[-1]
+
+        # Extract company name and role from job description
+        # This is a simple extraction - you might want to make it more sophisticated
+        company_name = request.job_description.split('\n')[0].strip()  # First line usually contains company name
+        role = request.job_description.split('\n')[1].strip()  # Second line usually contains role
+
+        # Clean up company name and role for file naming
+        company_name = re.sub(r'[^a-zA-Z0-9]', '_', company_name)
+        role = re.sub(r'[^a-zA-Z0-9]', '_', role)
+
+        # Create file names
+        resume_filename = f"{fname}_{lname}_{company_name}_{role}_resume.pdf"
+        cover_letter_filename = f"{fname}_{lname}_{company_name}_{role}_cover_letter.pdf"
 
         # 2. Call OpenAI to customize resume
         resume_messages = [
@@ -718,7 +752,9 @@ async def customize_documents(request: CustomizeDocumentsRequest):
         return {
             "success": True,
             "cv_content": resume_b64,
-            "cover_letter_content": cl_b64
+            "cover_letter_content": cl_b64,
+            "resume_filename": resume_filename,
+            "cover_letter_filename": cover_letter_filename
         }
 
     except Exception as e:
