@@ -5,6 +5,7 @@ import math
 from dotenv import load_dotenv
 import os
 import base64
+import io
 
 # Load environment variables
 load_dotenv()
@@ -30,6 +31,12 @@ def display_pdf_viewer(pdf_base64, title):
     pdf_display = F'<iframe src="data:application/pdf;base64,{pdf_base64}" width="100%" height="800" type="application/pdf"></iframe>'
     st.markdown(f"### {title}")
     st.markdown(pdf_display, unsafe_allow_html=True)
+
+def download_pdf(pdf_bytes, filename, label):
+    """Helper function to create a download link with proper filename"""
+    b64 = base64.b64encode(pdf_bytes).decode()
+    href = f'<a href="data:application/pdf;base64,{b64}" download="{filename}">{label}</a>'
+    return href
 
 def view_saved_jobs():
     # st.header("Saved Jobs")
@@ -116,6 +123,46 @@ def view_saved_jobs():
                             st.markdown(f"**Company:** {job.get('company', 'N/A')}")
                             st.markdown(f"**Location:** {job.get('location', 'N/A')}")
                             
+                            # Add Generate CV button and download links
+                            col1a, col1b, col1c = st.columns([1, 1, 1])
+                            with col1a:
+                                if st.button("Generate CV", key=f"gen_cv_{job.get('_id', '')}"):
+                                    with st.spinner('Generating customized CV and Cover Letter...'):
+                                        try:
+                                            response = requests.post(
+                                                f"{API_URL}/customize-documents",
+                                                json={"job_description": job.get('description', '')}
+                                            )
+                                            
+                                            if response.status_code == 200:
+                                                data = response.json()
+                                                st.success("Documents generated successfully!")
+                                                
+                                                # Store the generated documents in session state
+                                                state_key = f"docs_{job.get('_id', '')}"
+                                                st.session_state[state_key] = data
+                                            else:
+                                                st.error("Failed to generate documents. Please try again.")
+                                        except Exception as e:
+                                            st.error(f"Error generating documents: {str(e)}")
+                            
+                            # Add download links if documents are available
+                            state_key = f"docs_{job.get('_id', '')}"
+                            if state_key in st.session_state:
+                                data = st.session_state[state_key]
+                                with col1b:
+                                    cv_bytes = base64.b64decode(data['cv_content'])
+                                    st.markdown(
+                                        download_pdf(cv_bytes, data.get('resume_filename', 'customized_cv.pdf'), "📄 Download CV"),
+                                        unsafe_allow_html=True
+                                    )
+                                with col1c:
+                                    cl_bytes = base64.b64decode(data['cover_letter_content'])
+                                    st.markdown(
+                                        download_pdf(cl_bytes, data.get('cover_letter_filename', 'cover_letter.pdf'), "📝 Download Cover Letter"),
+                                        unsafe_allow_html=True
+                                    )
+                            
                             # Show job details in an expander
                             with st.expander("Show Details"):
                                 st.markdown(f"**Job Type:** {job.get('job_type', 'N/A')}")
@@ -140,63 +187,6 @@ def view_saved_jobs():
                                         st.markdown(f"**Posted:** {timestamp.strftime('%Y-%m-%d %H:%M:%S')}")
                                     except Exception as e:
                                         st.markdown(f"**Posted:** {job['timestamp']}")
-                                
-                                # Add Generate CV button inside the expander
-                                if st.button("Generate CV", key=f"gen_cv_{job.get('_id', '')}"):
-                                    with st.spinner('Generating customized CV and Cover Letter...'):
-                                        try:
-                                            response = requests.post(
-                                                f"{API_URL}/customize-documents",
-                                                json={"job_description": job.get('description', '')}
-                                            )
-                                            
-                                            if response.status_code == 200:
-                                                data = response.json()
-                                                st.success("Documents generated successfully!")
-                                                
-                                                # Store the generated documents in session state
-                                                state_key = f"docs_{job.get('_id', '')}"
-                                                st.session_state[state_key] = data
-                                            else:
-                                                st.error("Failed to generate documents. Please try again.")
-                                        except Exception as e:
-                                            st.error(f"Error generating documents: {str(e)}")
-                            
-                            # Display CV and Cover Letter tabs if documents were generated
-                            state_key = f"docs_{job.get('_id', '')}"
-                            if state_key in st.session_state:
-                                data = st.session_state[state_key]
-                                
-                                # Create tabs for CV and Cover Letter
-                                cv_tab, cl_tab = st.tabs(["CV", "Cover Letter"])
-                                
-                                # Display CV in first tab
-                                with cv_tab:
-                                    display_pdf_viewer(
-                                        data['cv_content'],
-                                        "Customized CV"
-                                    )
-                                    st.download_button(
-                                        "Download CV",
-                                        data=base64.b64decode(data['cv_content']),
-                                        file_name="customized_cv.pdf",
-                                        mime="application/pdf",
-                                        key=f"cv_download_{job.get('_id', '')}"
-                                    )
-                                
-                                # Display Cover Letter in second tab
-                                with cl_tab:
-                                    display_pdf_viewer(
-                                        data['cover_letter_content'],
-                                        "Cover Letter"
-                                    )
-                                    st.download_button(
-                                        "Download Cover Letter",
-                                        data=base64.b64decode(data['cover_letter_content']),
-                                        file_name="cover_letter.pdf",
-                                        mime="application/pdf",
-                                        key=f"cl_download_{job.get('_id', '')}"
-                                    )
                         
                         with col2:
                             if job.get('job_url'):

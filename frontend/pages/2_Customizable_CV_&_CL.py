@@ -3,6 +3,7 @@ import requests
 from dotenv import load_dotenv
 import os
 import base64
+import io
 
 # Load environment variables
 load_dotenv()
@@ -17,6 +18,12 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded",
 )
+
+def download_pdf(pdf_bytes, filename):
+    """Helper function to create a download button with proper filename"""
+    b64 = base64.b64encode(pdf_bytes).decode()
+    href = f'<a href="data:application/pdf;base64,{b64}" download="{filename}">Download {filename}</a>'
+    return href
 
 def customize_documents():
     st.title("Customize your files based on the job description")
@@ -49,9 +56,11 @@ def customize_documents():
                     if response.get("success"):
                         st.success("Documents customized successfully!")
                         
-                        # Store the PDFs in session state
+                        # Store the PDFs and filenames in session state
                         st.session_state.resume_pdf = response["cv_content"]
                         st.session_state.cover_letter_pdf = response["cover_letter_content"]
+                        st.session_state.resume_filename = response["resume_filename"]
+                        st.session_state.cover_letter_filename = response["cover_letter_filename"]
                         
                         # Show preview and download buttons outside the form
                         st.session_state.show_downloads = True
@@ -68,12 +77,9 @@ def customize_documents():
         with col1:
             # Resume download and preview
             cv_bytes = base64.b64decode(st.session_state.resume_pdf)
-            st.download_button(
-                label="Download Customized CV",
-                data=cv_bytes,
-                file_name="customized_cv.pdf",
-                mime="application/pdf",
-                key="cv_download"
+            st.markdown(
+                download_pdf(cv_bytes, st.session_state.resume_filename),
+                unsafe_allow_html=True
             )
             st.write("Preview of your customized CV:")
             st.write(f'<iframe src="data:application/pdf;base64,{st.session_state.resume_pdf}" width="100%" height="500px"></iframe>', unsafe_allow_html=True)
@@ -81,12 +87,9 @@ def customize_documents():
         with col2:
             # Cover letter download and preview
             cl_bytes = base64.b64decode(st.session_state.cover_letter_pdf)
-            st.download_button(
-                label="Download Cover Letter",
-                data=cl_bytes,
-                file_name="cover_letter.pdf",
-                mime="application/pdf",
-                key="cl_download"
+            st.markdown(
+                download_pdf(cl_bytes, st.session_state.cover_letter_filename),
+                unsafe_allow_html=True
             )
             st.write("Preview of your Cover Letter:")
             st.write(f'<iframe src="data:application/pdf;base64,{st.session_state.cover_letter_pdf}" width="100%" height="500px"></iframe>', unsafe_allow_html=True)
