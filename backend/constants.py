@@ -70,7 +70,35 @@ Keyword and Content Requirements:
      * For a SOC role: "Developed automated threat detection system reducing response time by 40\\%"
      * For a DevSecOps role: "Implemented container security scanning in CI/CD pipeline"
 
-5. Soft Skills and Collaboration:
+5. Certifications Section (CRITICAL - Must Match Job Role):
+   - Requirements:
+     * Include ONLY certifications relevant to the job role
+     * Prioritize certifications mentioned in the job description
+     * Remove irrelevant certifications
+     * Include certification dates if recent (within last 3 years)
+   - Role-Specific Certification Examples:
+     * Cybersecurity Roles:
+       - CISSP, CISM, CEH, Security+, OSCP, GIAC
+       - Cloud Security: AWS Security Specialty, Azure Security Engineer
+       - Compliance: CISA, CRISC, CGEIT
+     * Project Management Roles:
+       - PMP, PRINCE2, Agile/Scrum certifications
+       - Risk Management: PMI-RMP
+       - Program Management: PgMP
+     * DevOps/DevSecOps Roles:
+       - AWS/Azure/GCP certifications
+       - Kubernetes: CKA, CKAD
+       - CI/CD: Jenkins, GitLab, GitHub certifications
+     * DoD/Government Roles:
+       - Security+: Required for DoD 8570 compliance
+       - CISSP: Required for IAT Level III
+       - CEH: Required for some DoD roles
+     * Network Engineering Roles:
+       - CCNA, CCNP, CCIE
+       - Network Security: CCNA Security, CCNP Security
+       - Cloud Networking: AWS/Azure networking certifications
+
+6. Soft Skills and Collaboration:
    - Include bullets demonstrating:
      * Communication with stakeholders
      * Cross-functional team collaboration
