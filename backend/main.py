@@ -276,7 +276,7 @@ async def parse_resume(
                 search_payload = {
                     "search_term": roles_keywords,
                     "location": "United States",
-                    "results_wanted": 20
+                    "results_wanted": 50
                 }
                 logger.info(f"Search payload: {search_payload}")
 
@@ -384,7 +384,8 @@ async def search_and_store_jobs(params: JobSearchParams):
             job_dict['timestamp'] = timestamp
             job_dict['search_term'] = params.search_term
             job_dict['search_location'] = params.location
-            enhanced_jobs.append(job_dict)
+            if job_dict.get('is_remote', True):
+                enhanced_jobs.append(job_dict)
 
         # Store in MongoDB
         if enhanced_jobs:
