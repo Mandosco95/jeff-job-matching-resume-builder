@@ -359,12 +359,12 @@ async def search_and_store_jobs(params: JobSearchParams):
         
         # Scrape jobs using JobSpy (only LinkedIn and Indeed)
         jobs = scrape_jobs(
-            site_name=["linkedin", "indeed"],
+            site_name=["indeed", "linkedin"],
             search_term=params.search_term,
             location=params.location,
             results_wanted=params.results_wanted,
             country_indeed=params.country_indeed,
-            hours_old=72,  # Get jobs posted in the last 72 hours
+            hours_old=100,  # Get jobs posted in the last 100 hours
             linkedin_fetch_description=True
         )
 
@@ -384,7 +384,28 @@ async def search_and_store_jobs(params: JobSearchParams):
             job_dict['timestamp'] = timestamp
             job_dict['search_term'] = params.search_term
             job_dict['search_location'] = params.location
-            if job_dict.get('is_remote', True):
+            # Call LLM to analyze job details and determine if remote
+            remote_check_messages = [
+                {
+                    "role": "system", 
+                    "content": "You are an expert at analyzing job postings to determine if they are remote positions. Analyze the job details and respond with only 'true' if the job appears to be remote, or 'false' if not remote."
+                },
+                {
+                    "role": "user",
+                    "content": f"Job Title: {job_dict.get('title', '')}\nLocation: {job_dict.get('location', '')}\nDescription: {job_dict.get('description', '')}\nJob Type: {job_dict.get('job_type', '')}"
+                }
+            ]
+            
+            remote_response = await client.chat.completions.create(
+                model="gpt-4",
+                messages=remote_check_messages,
+                max_tokens=10
+            )
+            
+            is_remote = remote_response.choices[0].message.content.strip().lower() == 'true'
+            job_dict['is_remote'] = is_remote
+            
+            if is_remote:
                 enhanced_jobs.append(job_dict)
 
         # Store in MongoDB
