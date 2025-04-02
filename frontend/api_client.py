@@ -52,7 +52,7 @@ class APIClient:
         else:
             response.raise_for_status()
     
-    def customize_documents(self, job_description: str, user_id: str) -> dict:
+    def customize_documents(self, job_description: str, user_id: str, id: str) -> dict:
         """
         Send request to customize CV and Cover Letter based on job description
         """
@@ -61,7 +61,8 @@ class APIClient:
                 f"{self.base_url}/customize-documents",
                 json={
                     "job_description": job_description,
-                    "user_id": user_id
+                    "user_id": user_id,
+                    "id": id
                 },
                 headers=self.headers
             )

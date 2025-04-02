@@ -118,6 +118,7 @@ class ChatRequest(BaseModel):
 
 class CustomizeDocumentsRequest(BaseModel):
     job_description: str
+    id: str
 
 class ResumeRequest(BaseModel):
     additional_info: Optional[str] = None
@@ -667,7 +668,11 @@ async def get_pdf_from_latex(latex_content: str, retry: bool = True) -> bytes:
 @app.post("/customize-documents", tags=["Documents"])
 async def customize_documents(request: CustomizeDocumentsRequest):
     try:
-        # 1. Get the user's resume data from MongoDB
+        # 1. Get the user's resume data and job details from MongoDB
+        job = await db.jobs.find_one({"id": request.id})
+        logger.info(f"Found job: {job}")
+        if not job:
+            raise HTTPException(status_code=404, detail="Job not found")
         user_resume = await db.resumes.find().sort("_id", -1).limit(1).to_list(1)
         if user_resume:
             user_resume = user_resume[0]
@@ -690,16 +695,16 @@ async def customize_documents(request: CustomizeDocumentsRequest):
 
         # Extract company name and role from job description
         # This is a simple extraction - you might want to make it more sophisticated
-        company_name = request.job_description.split('\n')[0].strip()  # First line usually contains company name
-        role = request.job_description.split('\n')[1].strip()  # Second line usually contains role
+        # company_name = request.job_description.split('\n')[0].strip()  # First line usually contains company name
+        # role = request.job_description.split('\n')[1].strip()  # Second line usually contains role
 
         # Clean up company name and role for file naming
-        company_name = re.sub(r'[^a-zA-Z0-9]', '_', company_name)
-        role = re.sub(r'[^a-zA-Z0-9]', '_', role)
+        # company_name = re.sub(r'[^a-zA-Z0-9]', '_', company_name)
+        # role = re.sub(r'[^a-zA-Z0-9]', '_', role)
 
         # Create file names
-        resume_filename = f"{fname}_{lname}_{company_name}_{role}_resume.pdf"
-        cover_letter_filename = f"{fname}_{lname}_{company_name}_{role}_cover_letter.pdf"
+        resume_filename = f"{fname}_{lname}_{job['company']}_resume.pdf"
+        cover_letter_filename = f"{fname}_{lname}_{job['company']}_cover_letter.pdf"
 
         # 2. Call OpenAI to customize resume
         resume_messages = [

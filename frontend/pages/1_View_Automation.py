@@ -129,9 +129,13 @@ def view_saved_jobs():
                                 if st.button("Generate CV", key=f"gen_cv_{job.get('_id', '')}"):
                                     with st.spinner('Generating customized CV and Cover Letter...'):
                                         try:
+                                            # print(job)
                                             response = requests.post(
                                                 f"{API_URL}/customize-documents",
-                                                json={"job_description": job.get('description', '')}
+                                                json={
+                                                    "job_description": job.get('description', ''),
+                                                    "id": job.get('id', '')
+                                                }
                                             )
                                             
                                             if response.status_code == 200:
