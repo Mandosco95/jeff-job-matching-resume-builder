@@ -236,8 +236,10 @@ jeffrey.ezugwu\\@gmail.com \\\\
 
 % Recipient info
 Hiring Manager \\\\
-Company Name \\\\
+{CompanyName} \\\\
 \\vspace{1em}
+
+% IMPORTANT: The {CompanyName} placeholder above MUST be replaced with the actual company name.
 
 % Opening paragraph (hook)
 % Company-specific paragraph
@@ -258,4 +260,5 @@ A resume summary
 Job title (to determine appropriate tone)
 
 Use them to craft a role-specific, impactful cover letter that demonstrates value and enthusiasm.
+CRITICAL: You must replace the placeholder `{CompanyName}` with the actual company name found in the job description.
 """

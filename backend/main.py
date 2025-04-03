@@ -756,9 +756,11 @@ async def customize_documents(request: CustomizeDocumentsRequest):
             },
             {
                 "role": "user",
-                "content": f"""Job Description: {request.job_description}
+                "content": f"""Company Name: {job['company']}
+                Job Title: {job['title']}
+                Job Description: {request.job_description}
                 Candidate Resume: {json.dumps(user_resume['parsed_data'])}
-                Please write a professional cover letter in LaTeX format."""
+                Please write a professional cover letter in LaTeX format, using the provided Company Name ('{job['company']}') and Job Title ('{job['title']}'). Ensure the placeholder '{{CompanyName}}' in the template is replaced with '{job['company']}'. """
             }
         ]
 
