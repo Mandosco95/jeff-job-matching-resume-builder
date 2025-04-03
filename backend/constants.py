@@ -237,8 +237,6 @@ jeffrey.ezugwu\\@gmail.com \\\\
 % Recipient info
 Hiring Manager \\\\
 Company Name \\\\
-123 Business Street \\\\
-City, State 12345 \\\\
 \\vspace{1em}
 
 % Opening paragraph (hook)
