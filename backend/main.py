@@ -102,7 +102,7 @@ class JobSearchParams(BaseModel):
     search_term: str
     location: str = "United States"  # default location
     results_wanted: int = 20  # default number of results
-    country_indeed: str = "USA"  # default country for Indeed
+    # country_indeed: str = "USA"  # default country for Indeed
 
 class JobResponse(BaseModel):
     """
@@ -275,7 +275,7 @@ async def parse_resume(
                 
                 search_payload = {
                     "search_term": roles_keywords,
-                    "location": "United States",
+                    "location": "remote",
                     "results_wanted": 50
                 }
                 logger.info(f"Search payload: {search_payload}")
@@ -363,7 +363,7 @@ async def search_and_store_jobs(params: JobSearchParams):
             search_term=params.search_term,
             location=params.location,
             results_wanted=params.results_wanted,
-            country_indeed=params.country_indeed,
+            # country_indeed=params.country_indeed,
             hours_old=100,  # Get jobs posted in the last 100 hours
             linkedin_fetch_description=True
         )
@@ -399,7 +399,7 @@ async def search_and_store_jobs(params: JobSearchParams):
             remote_response = await client.chat.completions.create(
                 model="gpt-4",
                 messages=remote_check_messages,
-                max_tokens=10
+                max_tokens=100
             )
             
             is_remote = remote_response.choices[0].message.content.strip().lower() == 'true'
