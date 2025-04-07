@@ -399,7 +399,7 @@ async def search_and_store_jobs(params: JobSearchParams):
             remote_response = await client.chat.completions.create(
                 model="gpt-4",
                 messages=remote_check_messages,
-                max_tokens=100
+                max_tokens=50
             )
             
             is_remote = remote_response.choices[0].message.content.strip().lower() == 'true'
