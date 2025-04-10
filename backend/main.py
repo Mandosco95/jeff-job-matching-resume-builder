@@ -723,7 +723,6 @@ async def customize_documents(request: CustomizeDocumentsRequest):
     try:
         # 1. Get the user's resume data and job details from MongoDB
         job = await db.jobs.find_one({"id": request.id})
-        logger.info(f"Found job: {job}")
         if not job:
             raise HTTPException(status_code=404, detail="Job not found")
         user_resume = await db.resumes.find().sort("_id", -1).limit(1).to_list(1)

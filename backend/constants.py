@@ -220,33 +220,23 @@ Example structure:
 \\usepackage[margin=1in]{geometry}
 
 \\begin{document}
-
-% Sender info
-Jeffrey Ezugwu \\\\
-Palmdale, CA \\\\
-jeffreyezugwu\\@gmail.com \\\\
-661-483-6808 \\\\
-\\vspace{1em}
-
-% Date
-\\today \\\\
-\\vspace{1em}
-
-% Recipient info
-Hiring Manager \\\\
-{CompanyName} \\\\
-\\vspace{1em}
-
-% IMPORTANT: The {CompanyName} placeholder above MUST be replaced with the actual company name.
-
+\\noindent
+Jeffrey Ezugwu\\\\
+Palmdale, CA\\\\
+jeffreyezugwu\\@gmail.com\\\\
+661-483-6808\\\\[1em]
+\\noindent
+\\today\\\\[1em]
+\\noindent
+Hiring Manager\\\\[1em]
 % Opening paragraph (hook)
 % Company-specific paragraph
 % Experience match paragraph
 % Closing paragraph
 
-% Signature
 \\vspace{2em}
-Sincerely, \\\\
+\\noindent
+Sincerely,\\\\[1em]
 Jeffrey Ezugwu
 
 \\end{document}
@@ -258,5 +248,4 @@ A resume summary
 Job title (to determine appropriate tone)
 
 Use them to craft a role-specific, impactful cover letter that demonstrates value and enthusiasm.
-CRITICAL: You must replace the placeholder `{CompanyName}` with the actual company name found in the job description.
-"""
+CRITICAL: You must replace the placeholder `{CompanyName}` with the actual company name found in the job description."""
