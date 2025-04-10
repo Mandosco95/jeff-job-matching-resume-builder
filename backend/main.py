@@ -120,6 +120,10 @@ class CustomizeDocumentsRequest(BaseModel):
     job_description: str
     id: str
 
+class MarkJobStatusRequest(BaseModel):
+    job_id: str
+    is_read: bool
+
 class ResumeRequest(BaseModel):
     additional_info: Optional[str] = None
     skills_keywords: Optional[str] = None
@@ -363,7 +367,6 @@ async def search_and_store_jobs(params: JobSearchParams):
             search_term=params.search_term,
             location=params.location,
             results_wanted=params.results_wanted,
-            # country_indeed=params.country_indeed,
             hours_old=100,  # Get jobs posted in the last 100 hours
             linkedin_fetch_description=True
         )
@@ -384,6 +387,8 @@ async def search_and_store_jobs(params: JobSearchParams):
             job_dict['timestamp'] = timestamp
             job_dict['search_term'] = params.search_term
             job_dict['search_location'] = params.location
+            job_dict['is_read'] = False  # Set is_read to False by default for new jobs
+            
             # Call LLM to analyze job details and determine if remote
             remote_check_messages = [
                 {
@@ -405,8 +410,8 @@ async def search_and_store_jobs(params: JobSearchParams):
             is_remote = remote_response.choices[0].message.content.strip().lower() == 'true'
             job_dict['is_remote'] = is_remote
             
-            if is_remote:
-                enhanced_jobs.append(job_dict)
+            # Store all jobs, not just remote ones
+            enhanced_jobs.append(job_dict)
 
         # Store in MongoDB
         if enhanced_jobs:
@@ -446,7 +451,7 @@ def clean_mongo_data(data):
 @app.get("/api/jobs/recent", tags=["Jobs"])
 async def get_recent_jobs(
     search_term: Optional[str] = None,
-    limit: int = 50
+    is_read: Optional[bool] = None
 ):
     """
     Retrieve recent jobs from the database.
@@ -456,16 +461,42 @@ async def get_recent_jobs(
         query = {}
         if search_term:
             query["search_term"] = search_term
+        if is_read is not None:
+            # If looking for read jobs, only include explicitly marked as read
+            if is_read == True:
+                query["is_read"] = True
+                logger.info("Querying for read jobs")
+            else:
+                # For unread jobs, include everything except explicitly marked as read
+                query["$or"] = [
+                    {"is_read": False},
+                    {"is_read": {"$exists": False}},
+                    {"is_read": None},
+                    {"$and": [
+                        {"is_read": {"$exists": True}},
+                        {"is_read": {"$ne": True}}
+                    ]}
+                ]
+                logger.info("Querying for unread jobs")
+        else:
+            logger.info("Querying for all jobs")
 
-        # Get jobs from MongoDB
-        cursor = db.jobs.find(query).sort("timestamp", -1).limit(limit)
-        jobs = await cursor.to_list(length=limit)
+        logger.info(f"Query: {query}")
+
+        # Get jobs from MongoDB without limit
+        cursor = db.jobs.find(query).sort("timestamp", -1)
+        jobs = await cursor.to_list(length=None)
+        
+        # Get total count for the query
+        total_count = await db.jobs.count_documents(query)
+        
+        logger.info(f"Found {len(jobs)} jobs matching query, total count: {total_count}")
         
         # Clean the data directly without using dumps/loads
         cleaned_jobs = clean_mongo_data(jobs)
         
         response_data = {
-            "total_jobs": len(cleaned_jobs),
+            "total_jobs": total_count,
             "jobs": cleaned_jobs
         }
 
@@ -788,6 +819,31 @@ async def customize_documents(request: CustomizeDocumentsRequest):
 
     except Exception as e:
         logger.error(f"Error customizing documents: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/jobs/mark-status", tags=["Jobs"])
+async def mark_job_status(request: MarkJobStatusRequest):
+    """
+    Mark a job as read or unread
+    """
+    try:
+        logger.info(f"Marking job {request.job_id} as {'read' if request.is_read else 'unread'}")
+        
+        # Update the job status in MongoDB
+        result = await db.jobs.update_one(
+            {"_id": ObjectId(request.job_id)},
+            {"$set": {"is_read": request.is_read}}
+        )
+        
+        logger.info(f"Update result: {result.modified_count} documents modified")
+        
+        if result.modified_count == 1:
+            return {"message": f"Successfully marked job as {'read' if request.is_read else 'unread'}"}
+        else:
+            raise HTTPException(status_code=404, detail="Job not found")
+            
+    except Exception as e:
+        logger.error(f"Error marking job status: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":

@@ -13,7 +13,7 @@ Resume Requirements:
 - Use only basic LaTeX formatting: \\textbf, \\underline, \\itemize, etc.
 - No graphics, tables, or colored elements
 - Structure:
-  1. Name and Contact Info (name at top, bolded)
+  1. Name and Contact Info (name at top, bolded, with email jeffrey.ezugwu\\@gmail.com)
   2. Professional Summary (2-3 sentences tailored to the role)
   3. Technical Skills (grouped using \\itemize)
   4. Professional Experience (reverse chronological, job title, company, dates, bullet points)
@@ -156,7 +156,7 @@ A resume summary
 
 """
 
-COVER_LETTER_FORMAT = r"""You are a professional cover letter writer specializing in government and senior-level tech roles.
+COVER_LETTER_FORMAT = r"""You are a professional cover letter writer specializing in government and senior-level tech roles. Use jeffrey.ezugwu\\@gmail.com as the email address in the cover letter.
 Generate a compelling, ATS-friendly LaTeX cover letter using only the `article` document class and basic packages.
 
 CRITICAL PACKAGE REQUIREMENTS:
