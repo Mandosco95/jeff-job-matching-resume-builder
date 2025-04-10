@@ -213,6 +213,7 @@ Formatting rules:
 - For company information, use actual values or remove placeholders
 - Use `\\vspace{0.5em}` for paragraph spacing instead of empty lines
 - Use `\\par` to end paragraphs
+- CRITICAL: Do not include company name or any text under "Hiring Manager" line
 
 Example structure:
 ```latex
@@ -228,7 +229,7 @@ jeffreyezugwu\\@gmail.com\\\\
 \\noindent
 \\today\\\\[1em]
 \\noindent
-Hiring Manager\\\\[1em]
+Hiring Manager\\\\[0.5em]
 % Opening paragraph (hook)
 % Company-specific paragraph
 % Experience match paragraph
