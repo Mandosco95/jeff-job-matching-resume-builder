@@ -21,32 +21,36 @@ Resume Requirements:
   6. Certifications (if present)
   7. Additional Skills (if present)
 
-Keyword and Content Requirements:
+CRITICAL ALIGNMENT REQUIREMENTS:
 1. Professional Summary:
+   - MUST explicitly mention the exact job role from the job description in the first sentence
+   - Do not modify or abbreviate the job title
+   - Use the exact same capitalization and wording as in the job description
    - Create a 2-3 sentence summary that positions the candidate as a strong match
    - Include exact keywords from the job description
    - Emphasize years of experience and key qualifications
-   - Example: "Cybersecurity Engineer with 6+ years of DoD experience supporting RMF, A\\&A documentation, and secure systems design."
+   - Example: "Senior Software Engineer with 6+ years of experience in full-stack development, specializing in React, Node.js, and cloud technologies."
 
-2. Experience Section:
-   - Minimum 8 bullet points per role
+2. Experience Section (CRITICAL - Must Align with Job Requirements):
+   - Prioritize and emphasize experiences that directly match the job requirements
+   - For each role, focus on responsibilities and achievements that align with the job description
+   - Minimum 8 bullet points per role, with at least 4-5 directly matching job requirements
    - Each bullet point must:
      * Begin with strong action verbs (Led, Executed, Developed, Conducted)
-     * Include specific technical tools or processes
+     * Include specific technical tools or processes mentioned in the job description
      * Show measurable results or impact
      * Use exact terminology from the job description
    - Examples:
-     * "Led RMF compliance for 12 classified systems, coordinating A\\&A documentation and STIG implementation across three teams."
-     * "Reduced false positive alerts by 35\\% through optimization of SIEM correlation rules (Splunk \\& ArcSight)."
-     * "Conducted 10+ vulnerability assessments monthly using ACAS and OpenVAS, tracking POA\\&Ms through remediation cycles."
+     * "Led development of React-based frontend applications, implementing Redux for state management and Jest for testing."
+     * "Designed and implemented RESTful APIs using Node.js and Express, achieving 99.9\\% uptime."
+     * "Optimized database queries, reducing response time by 40\\% and improving application performance."
 
 3. Skills Section (CRITICAL - Must Match Job Description):
    - Group skills into these categories:
-     * Include some of the exact keywords from the job description
-     * Technical Skills (e.g., RMF, DIACAP, STIGs, SCAP, ACAS)
-     * Tools & Technologies (e.g., Splunk, QRadar, ArcSight, Nessus)
-     * Certifications (e.g., CISSP, CISM, Security+)
-     * Soft Skills (e.g., Leadership, Communication, Project Management)
+     * Technical Skills (exact match with job requirements)
+     * Tools & Technologies (exact match with job requirements)
+     * Certifications (relevant to the role)
+     * Soft Skills (mentioned in job description)
    - Requirements:
      * Include EVERY relevant skill from the job description
      * Use exact terminology from the job posting
@@ -54,21 +58,21 @@ Keyword and Content Requirements:
      * Remove irrelevant skills that don't match the job context
      * Include both technical and soft skills from the job description
    - Examples:
-     * For a DoD role: "RMF, DIACAP, STIGs, SCAP, ACAS, NIST 800-53"
-     * For a SOC role: "SIEM, IDS/IPS, EDR, Threat Hunting, Incident Response"
-     * For a DevSecOps role: "CI/CD, Container Security, IaC, SAST/DAST"
+     * For a Full-Stack role: "React, Node.js, Express, MongoDB, AWS, Docker, CI/CD"
+     * For a DevOps role: "AWS, Kubernetes, Terraform, Jenkins, Python, Bash"
+     * For a Data Science role: "Python, Pandas, NumPy, Scikit-learn, TensorFlow, SQL"
 
 4. Projects Section (If Relevant to Job):
-   - Include only projects that demonstrate relevant skills
+   - Include only projects that demonstrate relevant skills from the job description
    - Each project must:
      * Use terminology from the job description
      * Show measurable impact
      * Highlight relevant technical skills
      * Demonstrate soft skills mentioned in the job posting
    - Examples:
-     * For a DoD role: "Led RMF compliance project for 12 classified systems"
-     * For a SOC role: "Developed automated threat detection system reducing response time by 40\\%"
-     * For a DevSecOps role: "Implemented container security scanning in CI/CD pipeline"
+     * For a Full-Stack role: "Developed a React-based e-commerce platform with Node.js backend, handling 10K+ daily users"
+     * For a DevOps role: "Implemented CI/CD pipeline using Jenkins and Docker, reducing deployment time by 60\\%"
+     * For a Data Science role: "Built machine learning model for customer churn prediction with 85\\% accuracy"
 
 5. Certifications Section (CRITICAL - Must Match Job Role):
    - Requirements:
@@ -76,27 +80,10 @@ Keyword and Content Requirements:
      * Prioritize certifications mentioned in the job description
      * Remove irrelevant certifications
      * Include certification dates if recent (within last 3 years)
-   - Role-Specific Certification Examples:
-     * Cybersecurity Roles:
-       - CISSP, CISM, CEH, Security+, OSCP, GIAC
-       - Cloud Security: AWS Security Specialty, Azure Security Engineer
-       - Compliance: CISA, CRISC, CGEIT
-     * Project Management Roles:
-       - PMP, PRINCE2, Agile/Scrum certifications
-       - Risk Management: PMI-RMP
-       - Program Management: PgMP
-     * DevOps/DevSecOps Roles:
-       - AWS/Azure/GCP certifications
-       - Kubernetes: CKA, CKAD
-       - CI/CD: Jenkins, GitLab, GitHub certifications
-     * DoD/Government Roles:
-       - Security+: Required for DoD 8570 compliance
-       - CISSP: Required for IAT Level III
-       - CEH: Required for some DoD roles
-     * Network Engineering Roles:
-       - CCNA, CCNP, CCIE
-       - Network Security: CCNA Security, CCNP Security
-       - Cloud Networking: AWS/Azure networking certifications
+   - Examples:
+     * For a Cloud role: "AWS Solutions Architect, Google Cloud Professional"
+     * For a Security role: "CISSP, Security+, CEH"
+     * For a Project Management role: "PMP, Scrum Master"
 
 6. Soft Skills and Collaboration:
    - Include bullets demonstrating:
