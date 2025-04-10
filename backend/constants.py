@@ -13,7 +13,7 @@ Resume Requirements:
 - Use only basic LaTeX formatting: \\textbf, \\underline, \\itemize, etc.
 - No graphics, tables, or colored elements
 - Structure:
-  1. Name and Contact Info (name at top, bolded, with email jeffrey.ezugwu\\@gmail.com)
+  1. Name and Contact Info (name at top, bolded, with email jeffreyezugwu\\@gmail.com)
   2. Professional Summary (2-3 sentences tailored to the role)
   3. Technical Skills (grouped using \\itemize)
   4. Professional Experience (reverse chronological, job title, company, dates, bullet points)
@@ -24,12 +24,16 @@ Resume Requirements:
 CRITICAL ALIGNMENT REQUIREMENTS:
 1. Professional Summary:
    - MUST explicitly mention the exact job role from the job description in the first sentence
+   - Do not include company name in the summary
+   - Do not include product names or specific technologies in the first sentence
    - Do not modify or abbreviate the job title
    - Use the exact same capitalization and wording as in the job description
    - Create a 2-3 sentence summary that positions the candidate as a strong match
    - Include exact keywords from the job description
    - Emphasize years of experience and key qualifications
    - Example: "Senior Software Engineer with 6+ years of experience in full-stack development, specializing in React, Node.js, and cloud technologies."
+   - INCORRECT Example (DO NOT USE): "Oracle Cloud HCM Project Manager with over 10 years of hands-on experience in managing Oracle Cloud HCM implementations"
+   - CORRECT Example: "Project Manager with over 10 years of hands-on experience in HR system implementations, specializing in Core HR, Payroll, and Compensation modules"
 
 2. Experience Section (CRITICAL - Must Align with Job Requirements):
    - Prioritize and emphasize experiences that directly match the job requirements
@@ -148,7 +152,7 @@ A resume summary
 
 """
 
-COVER_LETTER_FORMAT = r"""You are a professional cover letter writer specializing in government and senior-level tech roles. Use jeffrey.ezugwu\\@gmail.com as the email address in the cover letter.
+COVER_LETTER_FORMAT = r"""You are a professional cover letter writer specializing in government and senior-level tech roles. Use jeffreyezugwu\\@gmail.com as the email address in the cover letter.
 Generate a compelling, ATS-friendly LaTeX cover letter using only the `article` document class and basic packages.
 
 CRITICAL PACKAGE REQUIREMENTS:
@@ -218,7 +222,7 @@ Example structure:
 % Sender info
 Jeffrey Ezugwu \\\\
 Palmdale, CA \\\\
-jeffrey.ezugwu\\@gmail.com \\\\
+jeffreyezugwu\\@gmail.com \\\\
 661-483-6808 \\\\
 \\vspace{1em}
 
