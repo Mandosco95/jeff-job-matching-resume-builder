@@ -31,7 +31,9 @@ CRITICAL ALIGNMENT REQUIREMENTS:
    - Create a 2-3 sentence summary that positions the candidate as a strong match
    - Include exact keywords from the job description
    - Emphasize years of experience and key qualifications
-   - Example: "Senior Software Engineer with 6+ years of experience in full-stack development, specializing in React, Node.js, and cloud technologies."
+   - Maintain proper grammar and natural language flow when incorporating the job title
+   - If the job title contains multiple words (e.g., "IT Associate Project Manager Senior"), restructure the sentence to flow naturally while preserving the exact title
+   - Example: "Senior IT Associate Project Manager with 6+ years of experience in full-stack development, specializing in React, Node.js, and cloud technologies."
    - INCORRECT Example (DO NOT USE): "Oracle Cloud HCM Project Manager with over 10 years of hands-on experience in managing Oracle Cloud HCM implementations"
    - CORRECT Example: "Project Manager with over 10 years of hands-on experience in HR system implementations, specializing in Core HR, Payroll, and Compensation modules"
 
