@@ -102,6 +102,7 @@ class JobSearchParams(BaseModel):
     search_term: str
     location: str = "United States"  # default location
     results_wanted: int = 20  # default number of results
+    hours_old: int = 48  # default hours old for job postings
     # country_indeed: str = "USA"  # default country for Indeed
 
 class JobResponse(BaseModel):
@@ -243,7 +244,8 @@ async def parse_resume(
     request: Request,
     cv_file: UploadFile,
     additional_info: Optional[str] = Form(None),
-    roles_keywords: Optional[str] = Form(None)
+    roles_keywords: Optional[str] = Form(None),
+    hours_old: Optional[int] = Form(48)  # Add hours_old parameter with default value of 48
 ):
     try:
         logger.info(f"Starting resume parsing for file: {cv_file.filename}")
@@ -280,7 +282,8 @@ async def parse_resume(
                 search_payload = {
                     "search_term": roles_keywords,
                     "location": "remote",
-                    "results_wanted": 50
+                    "results_wanted": 30,
+                    "hours_old": hours_old  # Include hours_old in the search payload
                 }
                 logger.info(f"Search payload: {search_payload}")
 
@@ -367,7 +370,7 @@ async def search_and_store_jobs(params: JobSearchParams):
             search_term=params.search_term,
             location=params.location,
             results_wanted=params.results_wanted,
-            hours_old=100,  # Get jobs posted in the last 100 hours
+            hours_old=params.hours_old,  # Use the hours_old parameter from the request
             linkedin_fetch_description=True
         )
 
@@ -797,7 +800,7 @@ async def customize_documents(request: CustomizeDocumentsRequest):
         cl_response = await client.chat.completions.create(
             model="gpt-4o",
             messages=cl_messages,
-            max_tokens=1000
+            max_tokens=500
         )
 
         # 4. Convert responses to PDFs

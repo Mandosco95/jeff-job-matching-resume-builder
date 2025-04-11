@@ -77,26 +77,23 @@ def main():
     st.title("Upload Your Resume")
     st.markdown("### Upload your resume and get it parsed using AI")
         
-    # Direct CV upload without extra click
-    uploaded_file = st.file_uploader("", 
-                                    type=["pdf", "docx", "txt"],
-                                    label_visibility="collapsed")
+    # Add file uploader
+    uploaded_file = st.file_uploader("Choose a PDF file", type=["pdf"])
     
-    if uploaded_file is not None:
-        # Display success message and file info
-        st.success(f"File '{uploaded_file.name}' uploaded successfully!")
+    # Add text input for additional information
+    additional_info = st.text_area("Additional Information (Optional)", 
+                                 placeholder="Enter any additional information about your experience, skills, or preferences...")
     
-    # Text area for additional information
-    additional_info = st.text_area(
-        "Add any additional information you'd like the AI to consider:",
-        height=100
-    )
-
-    # Input field for roles keywords
-    roles_keywords = st.text_input(
-        "Enter roles keywords you are looking for (space-separated):",
-        placeholder="e.g., Software Engineer Data Scientist Product Manager"
-    )
+    # Add text input for roles keywords
+    roles_keywords = st.text_input("Roles Keywords (Optional)", 
+                                 placeholder="Enter keywords for job roles you're interested in (e.g., 'software engineer, data scientist')")
+    
+    # Add number input for hours_old
+    hours_old = st.number_input("Maximum Age of Job Postings (in hours)", 
+                              min_value=1, 
+                              max_value=720, 
+                              value=48,
+                              help="Only show jobs posted within this many hours")
     
     # Submit button
     if st.button("Parse Resume", use_container_width=False):
@@ -124,7 +121,8 @@ def main():
                     }
                     data = {
                         'additional_info': additional_info if additional_info else "",
-                        'roles_keywords': roles_keywords if roles_keywords else ""
+                        'roles_keywords': roles_keywords if roles_keywords else "",
+                        'hours_old': hours_old
                     }
                     
                     # Make the API request

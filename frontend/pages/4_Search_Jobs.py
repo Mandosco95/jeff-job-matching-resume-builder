@@ -18,6 +18,7 @@ def view_jobs():
         search_term = st.text_input("Search Term (e.g., 'software engineer')")
         location = st.text_input("Location", value="United States")
         results_wanted = st.number_input("Number of Results", min_value=1, max_value=100, value=20)
+        hours_old = st.number_input("Hours Old (Maximum age of job postings)", min_value=1, max_value=720, value=48)
         
         search_button = st.form_submit_button("Search Jobs")
         
@@ -29,7 +30,8 @@ def view_jobs():
                     json={
                         "search_term": search_term,
                         "location": location,
-                        "results_wanted": results_wanted
+                        "results_wanted": results_wanted,
+                        "hours_old": hours_old
                     }
                 )
                 
