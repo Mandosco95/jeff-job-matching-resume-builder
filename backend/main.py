@@ -366,7 +366,7 @@ async def search_and_store_jobs(params: JobSearchParams):
         
         # Scrape jobs using JobSpy (only LinkedIn and Indeed)
         jobs = scrape_jobs(
-            site_name=["indeed", "linkedin", "zip_recruiter", "glassdoor", "google", "bayt"],
+            site_name=["indeed", "linkedin", "zip_recruiter", "glassdoor", "google"],
             search_term=params.search_term,
             location=params.location,
             results_wanted=params.results_wanted,
