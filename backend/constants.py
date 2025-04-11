@@ -38,23 +38,28 @@ CRITICAL ALIGNMENT REQUIREMENTS:
    - CORRECT Example: "Project Manager with over 10 years of hands-on experience in HR system implementations, specializing in Core HR, Payroll, and Compensation modules"
 
 2. Experience Section (CRITICAL - Must Align with Job Requirements):
-   - Prioritize and emphasize experiences that directly match the job requirements
-   - For each role, focus on responsibilities and achievements that align with the job description
-   - Minimum 8 bullet points per role, with at least 4-5 directly matching job requirements
-   - Each bullet point must:
-     * Begin with strong action verbs (Led, Executed, Developed, Conducted)
-     * Include specific technical tools or processes mentioned in the job description
-     * Show measurable results or impact
-     * Use exact terminology from the job description
+   - CRITICAL: Only include roles and experiences that are directly relevant to the target position
+   - For example:
+     * If applying for a Manager role: Only include management experience, leadership roles, and team supervision
+     * If applying for a Developer role: Only include development experience, coding projects, and technical roles
+     * If applying for a Data Scientist role: Only include data analysis, ML, and statistical modeling experience
+   - For each included role:
+     * Focus on responsibilities and achievements that align with the job description
+     * Minimum 8 bullet points per role, with at least 4-5 directly matching job requirements
+     * Each bullet point must:
+       * Begin with strong action verbs (Led, Executed, Developed, Conducted)
+       * Include specific technical tools or processes mentioned in the job description
+       * Show measurable results or impact
+       * Use exact terminology from the job description
    - CRITICAL: For the most recent/relevant role:
      * MUST include responsibilities that directly match the job description
      * MUST use the same job title terminology if applicable
      * MUST highlight achievements that demonstrate required skills
      * MUST quantify results using metrics mentioned in job description
    - Examples:
-     * For a Senior Software Engineer role: "Led development of React-based frontend applications, implementing Redux for state management and Jest for testing, resulting in 40\\% faster page load times."
-     * For a DevOps Engineer role: "Designed and implemented CI/CD pipelines using Jenkins and Docker, reducing deployment time by 60\\% and achieving 99.9\\% uptime."
-     * For a Data Scientist role: "Developed machine learning models for customer churn prediction using Python and Scikit-learn, achieving 85\\% accuracy and reducing churn by 25\\%."
+     * For a Manager role: "Led a team of 15 developers, implemented agile methodologies, and improved project delivery time by 40%"
+     * For a Developer role: "Developed React-based frontend applications, implementing Redux for state management and Jest for testing"
+     * For a Data Scientist role: "Built machine learning models for customer churn prediction using Python and Scikit-learn"
 
 3. Skills Section (CRITICAL - Must Match Job Description):
    - Group skills into these categories:
