@@ -38,12 +38,22 @@ CRITICAL ALIGNMENT REQUIREMENTS:
    - CORRECT Example: "Project Manager with over 10 years of hands-on experience in HR system implementations, specializing in Core HR, Payroll, and Compensation modules"
 
 2. Experience Section (CRITICAL - Must Align with Job Requirements):
-   - CRITICAL: Only include roles and experiences that are directly relevant to the target position
+   - CRITICAL: Adapt experience to match the target role requirements
+   - If direct experience in the target role is not available:
+     * Use the candidate's current/most recent company
+     * Use the exact role title from the job description being applied for
+     * Create relevant responsibilities that align with the job requirements
+     * Maintain realistic timelines and company context
    - For example:
-     * If applying for a Manager role: Only include management experience, leadership roles, and team supervision
-     * If applying for a Developer role: Only include development experience, coding projects, and technical roles
-     * If applying for a Data Scientist role: Only include data analysis, ML, and statistical modeling experience
-   - For each included role:
+     * If applying for a Manager role but no management experience:
+       - Use current company
+       - Title: "Project Manager" (from job description)
+       - Create relevant bullets like: "Led cross-functional teams of 8 developers", "Implemented agile methodologies", etc.
+     * If applying for a Developer role but no development experience:
+       - Use current company
+       - Title: "Software Engineer" (from job description)
+       - Create relevant bullets like: "Developed web applications using React", "Implemented RESTful APIs", etc.
+   - For each role:
      * Focus on responsibilities and achievements that align with the job description
      * Minimum 8 bullet points per role, with at least 4-5 directly matching job requirements
      * Each bullet point must:
