@@ -13,7 +13,10 @@ Resume Requirements:
 - Use only basic LaTeX formatting: \\textbf, \\underline, \\itemize, etc.
 - No graphics, tables, or colored elements
 - Structure:
-  1. Name and Contact Info (name at top, bolded, with email jeffreyezugwu\\@gmail.com)
+  1. Contact Information (CRITICAL - MUST include all three):
+     * Name (bolded, at top)
+     * Email (jeffreyezugwu\\@gmail.com)
+     * Address (Palmdale, CA)
   2. Professional Summary (2-3 sentences tailored to the role)
   3. Technical Skills (grouped using \\itemize)
   4. Professional Experience (reverse chronological, job title, company, dates, bullet points)
@@ -45,6 +48,8 @@ CRITICAL ALIGNMENT REQUIREMENTS:
    - CRITICAL: Do NOT reuse bullet points from the original resume
    - CRITICAL: Build each experience section from scratch to match the job description
    - CRITICAL: ALL roles (Microsoft, Air Force, Lockheed) must have EQUAL depth and detail
+   - CRITICAL: Each bullet MUST include exact phrases and keywords from the job description
+   - CRITICAL: Each bullet MUST include measurable impact (e.g., "improved performance by 35%")
    - For each role:
      * Update job titles to match the target role's terminology when duties are reasonably similar
      * Example: "Cybersecurity Analyst" → "Security Engineer" if duties align
@@ -53,14 +58,17 @@ CRITICAL ALIGNMENT REQUIREMENTS:
    - For each role's responsibilities:
      * Create EXACTLY 6-8 NEW bullet points that exactly match the job description
      * Use the exact same terminology and phrases from the job posting
-     * If the job description mentions specific tools/processes, include them
-     * Example: If JD mentions "Jira" and you used a different tool, write "Managed projects using Jira"
-     * Example: If JD mentions "sprint planning" and you did similar work, write "Led sprint planning"
+     * Include ALL tools/technologies mentioned in the job description
+     * Include ALL processes/methodologies mentioned in the job description
+     * Example: If JD mentions "Change Management", include "Led Change Management initiatives"
+     * Example: If JD mentions "WBS creation", include "Created and maintained Work Breakdown Structures"
+     * Example: If JD mentions "Jira", include "Managed projects using Jira"
+     * Example: If JD mentions "sprint planning", include "Led sprint planning sessions"
    - For each role:
      * Each bullet point must:
        * Begin with strong action verbs from the job description
        * Include exact tools/processes mentioned in the job description
-       * Show measurable results or impact
+       * Show measurable results or impact (e.g., "reduced costs by 25%", "improved efficiency by 40%")
        * Use the exact same terminology as the job description
    - CRITICAL: For ALL roles (Microsoft, Air Force, Lockheed):
      * MUST have EXACTLY 6-8 bullet points each
@@ -69,9 +77,9 @@ CRITICAL ALIGNMENT REQUIREMENTS:
      * MUST highlight ALL required skills and achievements
      * MUST quantify results using metrics from the job description
    - Examples:
-     * For a Project Manager role: "Led sprint planning sessions, managed Jira boards, coordinated with scrum teams, and facilitated stakeholder communication"
-     * For a Security Engineer role: "Implemented security controls, conducted vulnerability assessments, and managed security operations"
-     * For a DevOps role: "Automated deployment pipelines, managed Kubernetes clusters, and implemented CI/CD workflows"
+     * For a Project Manager role: "Led sprint planning sessions, managed Jira boards, coordinated with scrum teams, and facilitated stakeholder communication, resulting in 30% faster project delivery"
+     * For a Security Engineer role: "Implemented security controls, conducted vulnerability assessments, and managed security operations, reducing security incidents by 45%"
+     * For a DevOps role: "Automated deployment pipelines, managed Kubernetes clusters, and implemented CI/CD workflows, decreasing deployment time by 60%"
 
 3. Skills Section (CRITICAL - Must Match Job Description):
    - Group skills into these categories:
@@ -85,6 +93,8 @@ CRITICAL ALIGNMENT REQUIREMENTS:
      * Prioritize skills that match the role's requirements
      * Remove irrelevant skills that don't match the job context
      * Include both technical and soft skills from the job description
+     * CRITICAL: Include ALL tools/technologies mentioned in the job description
+     * CRITICAL: Include ALL methodologies/processes mentioned in the job description
    - Examples:
      * For a Full-Stack role: "React, Node.js, Express, MongoDB, AWS, Docker, CI/CD"
      * For a DevOps role: "AWS, Kubernetes, Terraform, Jenkins, Python, Bash"
@@ -110,11 +120,21 @@ CRITICAL ALIGNMENT REQUIREMENTS:
      * Include certification dates if recent (within last 3 years)
      * NEVER include "Preferred" or other qualifiers
      * List certifications exactly as they appear in the job description
-     * CRITICAL: For ANY role with managerial/leadership responsibilities, ALWAYS include PMP certification
+     * CRITICAL: For ANY role with project management responsibilities, ALWAYS include PMP certification
      * CRITICAL: Include PMP for roles like: Project Manager, Program Manager, IT Manager, Team Lead, Department Head, etc.
+     * CRITICAL: Include PMP for ANY role that involves:
+       - Project planning or execution
+       - Team leadership
+       - Resource management
+       - Stakeholder communication
+       - Budget management
+       - Timeline management
+       - Risk management
+       - Change management
+       - Any other project management related responsibilities
    - Examples:
-     * For a Cloud role with management: "PMP, AWS Solutions Architect, Google Cloud Professional"
-     * For a Security role with management: "PMP, CISSP, Security+, CEH"
+     * For a Cloud role with project management: "PMP, AWS Solutions Architect, Google Cloud Professional"
+     * For a Security role with project management: "PMP, CISSP, Security+, CEH"
      * For a Project Management role: "PMP, Scrum Master, ITIL"
      * For a Managerial role: "PMP, ITIL, Six Sigma"
 
@@ -168,6 +188,13 @@ Example of proper document structure:
 \\begin{document}
 % Content here
 \\end{document}
+```
+
+Example of proper contact information format:
+```latex
+\\textbf{Jeffrey Ezugwu}\\\\
+Palmdale, CA\\\\
+jeffreyezugwu\\@gmail.com
 ```
 
 Input:
