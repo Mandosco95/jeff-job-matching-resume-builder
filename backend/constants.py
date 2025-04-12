@@ -41,27 +41,31 @@ CRITICAL ALIGNMENT REQUIREMENTS:
    - CRITICAL: Aggressively adapt ALL experience to match the target role requirements
    - CRITICAL: NEVER include the target company in the experience section
    - CRITICAL: ONLY use actual past companies (Microsoft, Lockheed, Air Force, etc.)
+   - CRITICAL: Each role MUST have EXACTLY 6-8 detailed bullet points matching the job description
+   - CRITICAL: Do NOT reuse bullet points from the original resume
+   - CRITICAL: Build each experience section from scratch to match the job description
+   - CRITICAL: ALL roles (Microsoft, Air Force, Lockheed) must have EQUAL depth and detail
    - For each role:
      * Update job titles to match the target role's terminology when duties are reasonably similar
      * Example: "Cybersecurity Analyst" → "Security Engineer" if duties align
      * Example: "Systems Administrator" → "IT Project Manager" if managing systems projects
      * DO NOT make unrealistic title changes (e.g., "Chef" → "Software Engineer")
    - For each role's responsibilities:
-     * Rewrite ALL bullet points to exactly match the job description's language
+     * Create EXACTLY 6-8 NEW bullet points that exactly match the job description
      * Use the exact same terminology and phrases from the job posting
-     * If the job description mentions specific tools/processes, include them even if not used
+     * If the job description mentions specific tools/processes, include them
      * Example: If JD mentions "Jira" and you used a different tool, write "Managed projects using Jira"
      * Example: If JD mentions "sprint planning" and you did similar work, write "Led sprint planning"
    - For each role:
-     * Minimum 8 bullet points per role, with ALL directly matching job requirements
      * Each bullet point must:
        * Begin with strong action verbs from the job description
        * Include exact tools/processes mentioned in the job description
        * Show measurable results or impact
        * Use the exact same terminology as the job description
-   - CRITICAL: For the most recent/relevant role:
-     * MUST use the exact job title from the job description
-     * MUST include ALL responsibilities that match the job description
+   - CRITICAL: For ALL roles (Microsoft, Air Force, Lockheed):
+     * MUST have EXACTLY 6-8 bullet points each
+     * MUST have EQUAL depth and detail
+     * MUST use the exact same terminology as the job description
      * MUST highlight ALL required skills and achievements
      * MUST quantify results using metrics from the job description
    - Examples:
@@ -104,10 +108,15 @@ CRITICAL ALIGNMENT REQUIREMENTS:
      * Prioritize certifications mentioned in the job description
      * Remove irrelevant certifications
      * Include certification dates if recent (within last 3 years)
+     * NEVER include "Preferred" or other qualifiers
+     * List certifications exactly as they appear in the job description
+     * CRITICAL: For ANY role with managerial/leadership responsibilities, ALWAYS include PMP certification
+     * CRITICAL: Include PMP for roles like: Project Manager, Program Manager, IT Manager, Team Lead, Department Head, etc.
    - Examples:
-     * For a Cloud role: "AWS Solutions Architect, Google Cloud Professional"
-     * For a Security role: "CISSP, Security+, CEH"
-     * For a Project Management role: "PMP, Scrum Master"
+     * For a Cloud role with management: "PMP, AWS Solutions Architect, Google Cloud Professional"
+     * For a Security role with management: "PMP, CISSP, Security+, CEH"
+     * For a Project Management role: "PMP, Scrum Master, ITIL"
+     * For a Managerial role: "PMP, ITIL, Six Sigma"
 
 6. Soft Skills and Collaboration:
    - Include bullets demonstrating:
