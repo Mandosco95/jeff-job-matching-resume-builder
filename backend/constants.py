@@ -38,38 +38,36 @@ CRITICAL ALIGNMENT REQUIREMENTS:
    - CORRECT Example: "Project Manager with over 10 years of hands-on experience in HR system implementations, specializing in Core HR, Payroll, and Compensation modules"
 
 2. Experience Section (CRITICAL - Must Align with Job Requirements):
-   - CRITICAL: Adapt experience to match the target role requirements
-   - If direct experience in the target role is not available:
-     * Use the candidate's current/most recent company
-     * Use the exact role title from the job description being applied for
-     * Create relevant responsibilities that align with the job requirements
-     * Maintain realistic timelines and company context
-   - For example:
-     * If applying for a Manager role but no management experience:
-       - Use current company
-       - Title: "Project Manager" (from job description)
-       - Create relevant bullets like: "Led cross-functional teams of 8 developers", "Implemented agile methodologies", etc.
-     * If applying for a Developer role but no development experience:
-       - Use current company
-       - Title: "Software Engineer" (from job description)
-       - Create relevant bullets like: "Developed web applications using React", "Implemented RESTful APIs", etc.
+   - CRITICAL: Aggressively adapt ALL experience to match the target role requirements
+   - CRITICAL: NEVER include the target company in the experience section
+   - CRITICAL: ONLY use actual past companies (Microsoft, Lockheed, Air Force, etc.)
    - For each role:
-     * Focus on responsibilities and achievements that align with the job description
-     * Minimum 8 bullet points per role, with at least 4-5 directly matching job requirements
+     * Update job titles to match the target role's terminology when duties are reasonably similar
+     * Example: "Cybersecurity Analyst" → "Security Engineer" if duties align
+     * Example: "Systems Administrator" → "IT Project Manager" if managing systems projects
+     * DO NOT make unrealistic title changes (e.g., "Chef" → "Software Engineer")
+   - For each role's responsibilities:
+     * Rewrite ALL bullet points to exactly match the job description's language
+     * Use the exact same terminology and phrases from the job posting
+     * If the job description mentions specific tools/processes, include them even if not used
+     * Example: If JD mentions "Jira" and you used a different tool, write "Managed projects using Jira"
+     * Example: If JD mentions "sprint planning" and you did similar work, write "Led sprint planning"
+   - For each role:
+     * Minimum 8 bullet points per role, with ALL directly matching job requirements
      * Each bullet point must:
-       * Begin with strong action verbs (Led, Executed, Developed, Conducted)
-       * Include specific technical tools or processes mentioned in the job description
+       * Begin with strong action verbs from the job description
+       * Include exact tools/processes mentioned in the job description
        * Show measurable results or impact
-       * Use exact terminology from the job description
+       * Use the exact same terminology as the job description
    - CRITICAL: For the most recent/relevant role:
-     * MUST include responsibilities that directly match the job description
-     * MUST use the same job title terminology if applicable
-     * MUST highlight achievements that demonstrate required skills
-     * MUST quantify results using metrics mentioned in job description
+     * MUST use the exact job title from the job description
+     * MUST include ALL responsibilities that match the job description
+     * MUST highlight ALL required skills and achievements
+     * MUST quantify results using metrics from the job description
    - Examples:
-     * For a Manager role: "Led a team of 15 developers, implemented agile methodologies, and improved project delivery time by 40%"
-     * For a Developer role: "Developed React-based frontend applications, implementing Redux for state management and Jest for testing"
-     * For a Data Scientist role: "Built machine learning models for customer churn prediction using Python and Scikit-learn"
+     * For a Project Manager role: "Led sprint planning sessions, managed Jira boards, coordinated with scrum teams, and facilitated stakeholder communication"
+     * For a Security Engineer role: "Implemented security controls, conducted vulnerability assessments, and managed security operations"
+     * For a DevOps role: "Automated deployment pipelines, managed Kubernetes clusters, and implemented CI/CD workflows"
 
 3. Skills Section (CRITICAL - Must Match Job Description):
    - Group skills into these categories:
