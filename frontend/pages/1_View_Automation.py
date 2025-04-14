@@ -289,14 +289,6 @@ def display_applied_jobs(applied_data):
                             unsafe_allow_html=True
                         )
                 
-                # Add expander for resume and cover letter
-                with st.expander("View Application Documents"):
-                    st.markdown("### Resume")
-                    st.text_area("Resume Text", application.get('resume_text', ''), height=300)
-                    
-                    st.markdown("### Cover Letter")
-                    st.text_area("Cover Letter Text", application.get('cover_letter_text', ''), height=300)
-                
                 # Show job details in an expander
                 with st.expander("Show Job Details"):
                     st.markdown(f"**Job Type:** {job.get('job_type', 'N/A')}")
