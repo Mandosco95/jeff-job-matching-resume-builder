@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException, UploadFile, File, Form, BackgroundTasks, Request
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional, Dict, List
 import os
 from dotenv import load_dotenv
@@ -124,6 +124,12 @@ class CustomizeDocumentsRequest(BaseModel):
 class MarkJobStatusRequest(BaseModel):
     job_id: str
     is_read: bool
+
+class JobApplicationRequest(BaseModel):
+    job_id: str
+    resume_text: str
+    cover_letter_text: str
+    application_date: datetime = Field(default_factory=datetime.utcnow)
 
 class ResumeRequest(BaseModel):
     additional_info: Optional[str] = None
@@ -846,6 +852,71 @@ async def mark_job_status(request: MarkJobStatusRequest):
             
     except Exception as e:
         logger.error(f"Error marking job status: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/jobs/apply", tags=["Jobs"])
+async def apply_for_job(request: JobApplicationRequest):
+    """
+    Store job application details including resume and cover letter
+    """
+    try:
+        logger.info(f"Processing job application for job ID: {request.job_id}")
+        
+        # Get the job details
+        job = await db.jobs.find_one({"_id": ObjectId(request.job_id)})
+        if not job:
+            raise HTTPException(status_code=404, detail="Job not found")
+        
+        # Create application record
+        application_data = {
+            "job_id": request.job_id,
+            "job_details": job,
+            "resume_text": request.resume_text,
+            "cover_letter_text": request.cover_letter_text,
+            "application_date": request.application_date,
+            "status": "applied"  # Can be extended to track application status
+        }
+        
+        # Store in applications collection
+        result = await db.applications.insert_one(application_data)
+        
+        # Also mark the job as read since user has applied
+        await db.jobs.update_one(
+            {"_id": ObjectId(request.job_id)},
+            {"$set": {"is_read": True}}
+        )
+        
+        return {
+            "message": "Successfully applied for the job",
+            "application_id": str(result.inserted_id)
+        }
+        
+    except Exception as e:
+        logger.error(f"Error processing job application: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/jobs/applied", tags=["Jobs"])
+async def get_applied_jobs():
+    """
+    Retrieve all jobs that have been applied for
+    """
+    try:
+        # Get all applications from MongoDB
+        cursor = db.applications.find().sort("application_date", -1)
+        applications = await cursor.to_list(length=None)
+        
+        # Clean the data
+        cleaned_applications = clean_mongo_data(applications)
+        
+        return JSONResponse(
+            content=json.loads(json_util.dumps({
+                "total_applications": len(cleaned_applications),
+                "applications": cleaned_applications
+            }))
+        )
+        
+    except Exception as e:
+        logger.error(f"Error retrieving applied jobs: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":

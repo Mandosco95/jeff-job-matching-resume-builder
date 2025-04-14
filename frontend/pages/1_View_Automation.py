@@ -39,18 +39,20 @@ def download_pdf(pdf_bytes, filename, label):
     return href
 
 def view_saved_jobs():
-    # Add tabs for unread and read jobs
-    tab1, tab2 = st.tabs(["Unread Jobs", "Read Jobs"])
+    # Add tabs for unread, read, and applied jobs
+    tab1, tab2, tab3 = st.tabs(["Unread Jobs", "Read Jobs", "Applied Jobs"])
     
     try:
         # Fetch unread jobs
         with st.spinner("Fetching saved jobs..."):
             unread_response = requests.get(f"{API_URL}/api/jobs/recent?is_read=false")
             read_response = requests.get(f"{API_URL}/api/jobs/recent?is_read=true")
+            applied_response = requests.get(f"{API_URL}/api/jobs/applied")
         
-        if unread_response.status_code == 200 and read_response.status_code == 200:
+        if unread_response.status_code == 200 and read_response.status_code == 200 and applied_response.status_code == 200:
             unread_jobs_data = unread_response.json()
             read_jobs_data = read_response.json()
+            applied_jobs_data = applied_response.json()
             
             # Display unread jobs in the first tab
             with tab1:
@@ -65,6 +67,13 @@ def view_saved_jobs():
                     display_jobs(read_jobs_data, "read")
                 else:
                     st.info("No read jobs found.")
+            
+            # Display applied jobs in the third tab
+            with tab3:
+                if applied_jobs_data["applications"]:
+                    display_applied_jobs(applied_jobs_data)
+                else:
+                    st.info("No applied jobs found.")
         else:
             st.error(f"Error fetching jobs: {unread_response.text if unread_response.status_code != 200 else read_response.text}")
                 
@@ -138,6 +147,7 @@ def display_jobs(jobs_data, tab_type):
                     # Add mark as read/unread button
                     with col1d:
                         if tab_type == "unread":
+                            # Create a single row with two buttons
                             if st.button("Mark as Read", key=f"mark_read_{job.get('_id', '')}"):
                                 try:
                                     response = requests.post(
@@ -154,6 +164,35 @@ def display_jobs(jobs_data, tab_type):
                                         st.error("Failed to mark job as read")
                                 except Exception as e:
                                     st.error(f"Error marking job as read: {str(e)}")
+                            
+                            # Check if documents are generated for this job
+                            state_key = f"docs_{job.get('_id', '')}"
+                            if state_key in st.session_state:
+                                if st.button("Applied", key=f"applied_{job.get('_id', '')}"):
+                                    try:
+                                        # Get the generated documents
+                                        docs = st.session_state[state_key]
+                                        
+                                        # Send application request
+                                        response = requests.post(
+                                            f"{API_URL}/api/jobs/apply",
+                                            json={
+                                                "job_id": str(job.get('_id')),
+                                                "resume_text": docs.get('cv_content', ''),
+                                                "cover_letter_text": docs.get('cover_letter_content', '')
+                                            }
+                                        )
+                                        
+                                        if response.status_code == 200:
+                                            st.success("Successfully applied for the job!")
+                                            st.rerun()
+                                        else:
+                                            st.error("Failed to apply for the job")
+                                    except Exception as e:
+                                        st.error(f"Error applying for job: {str(e)}")
+                            else:
+                                st.button("Applied", key=f"applied_{job.get('_id', '')}", disabled=True, 
+                                         help="Generate CV and Cover Letter first")
                         else:
                             if st.button("Mark as Unread", key=f"mark_unread_{job.get('_id', '')}"):
                                 try:
@@ -219,5 +258,74 @@ def display_jobs(jobs_data, tab_type):
                         st.markdown(f"[Apply Now]({job['job_url']})")
                 
                 st.markdown("---")
+
+def display_applied_jobs(applied_data):
+    """Helper function to display applied jobs"""
+    for application in applied_data["applications"]:
+        with st.container():
+            col1, col2 = st.columns([3, 1])
+            
+            with col1:
+                job = application.get("job_details", {})
+                st.markdown(f"### {job.get('title', 'No Title')}")
+                st.markdown(f"**Company:** {job.get('company', 'N/A')}")
+                st.markdown(f"**Location:** {job.get('location', 'N/A')}")
+                st.markdown(f"**Applied Date:** {application.get('application_date', 'N/A')}")
+                
+                # Add download buttons for resume and cover letter
+                col1a, col1b = st.columns(2)
+                with col1a:
+                    if application.get('resume_text'):
+                        resume_bytes = base64.b64decode(application['resume_text'])
+                        st.markdown(
+                            download_pdf(resume_bytes, f"{job.get('company', 'company')}_resume.pdf", "📄 Download Resume"),
+                            unsafe_allow_html=True
+                        )
+                with col1b:
+                    if application.get('cover_letter_text'):
+                        cl_bytes = base64.b64decode(application['cover_letter_text'])
+                        st.markdown(
+                            download_pdf(cl_bytes, f"{job.get('company', 'company')}_cover_letter.pdf", "📝 Download Cover Letter"),
+                            unsafe_allow_html=True
+                        )
+                
+                # Add expander for resume and cover letter
+                with st.expander("View Application Documents"):
+                    st.markdown("### Resume")
+                    st.text_area("Resume Text", application.get('resume_text', ''), height=300)
+                    
+                    st.markdown("### Cover Letter")
+                    st.text_area("Cover Letter Text", application.get('cover_letter_text', ''), height=300)
+                
+                # Show job details in an expander
+                with st.expander("Show Job Details"):
+                    st.markdown(f"**Job Type:** {job.get('job_type', 'N/A')}")
+                    st.markdown(f"**Search Term:** {job.get('search_term', 'N/A')}")
+                    
+                    if job.get('description'):
+                        st.markdown("**Description:**")
+                        st.markdown(str(job['description']))
+                    
+                    # Display salary information if available
+                    if job.get('min_amount') is not None or job.get('max_amount') is not None:
+                        st.markdown("**Salary Range:**")
+                        if job.get('min_amount') is not None:
+                            st.markdown(f"Minimum: {job['min_amount']}")
+                        if job.get('max_amount') is not None:
+                            st.markdown(f"Maximum: {job['max_amount']}")
+                    
+                    # Display timestamp in a readable format
+                    if job.get('timestamp'):
+                        try:
+                            timestamp = datetime.fromisoformat(str(job['timestamp']).replace('Z', '+00:00'))
+                            st.markdown(f"**Posted:** {timestamp.strftime('%Y-%m-%d %H:%M:%S')}")
+                        except Exception as e:
+                            st.markdown(f"**Posted:** {job['timestamp']}")
+            
+            with col2:
+                if job.get('job_url'):
+                    st.markdown(f"[View Job Posting]({job['job_url']})")
+            
+            st.markdown("---")
 
 view_saved_jobs()
