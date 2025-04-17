@@ -23,6 +23,7 @@ import constants
 import tempfile
 import subprocess
 import re
+import asyncio
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -682,22 +683,40 @@ async def get_pdf_from_latex(latex_content: str, retry: bool = True) -> bytes:
             with open(temp_file_path, 'w', encoding='utf-8') as temp_file:
                 temp_file.write(latex_content)
 
-            # Run pdflatex in the temp directory
+            # Run pdflatex with optimized settings
             process = subprocess.run(
-                ['pdflatex', '-interaction=nonstopmode', temp_file_path],
+                [
+                    'pdflatex',
+                    '-interaction=nonstopmode',
+                    '-halt-on-error',
+                    '-no-shell-escape',  # Disable shell escape for security
+                    '-draftmode',  # First pass in draft mode
+                    temp_file_path
+                ],
                 cwd=temp_dir,
                 capture_output=True,
                 text=True,
-                check=False  # Don't raise exception immediately
+                check=False
             )
             
-            # Log the output for debugging
-            if process.stdout:
-                logger.info(f"pdflatex stdout: {process.stdout}")
-            if process.stderr:
-                logger.error(f"pdflatex stderr: {process.stderr}")
+            if process.returncode != 0:
+                raise Exception(f"pdflatex compilation failed with return code {process.returncode}")
             
-            # Check if compilation was successful
+            # Second pass for final output
+            process = subprocess.run(
+                [
+                    'pdflatex',
+                    '-interaction=nonstopmode',
+                    '-halt-on-error',
+                    '-no-shell-escape',
+                    temp_file_path
+                ],
+                cwd=temp_dir,
+                capture_output=True,
+                text=True,
+                check=False
+            )
+            
             if process.returncode != 0:
                 raise Exception(f"pdflatex compilation failed with return code {process.returncode}")
             
@@ -754,20 +773,11 @@ async def customize_documents(request: CustomizeDocumentsRequest):
         fname = name_parts[0]
         lname = name_parts[-1]
 
-        # Extract company name and role from job description
-        # This is a simple extraction - you might want to make it more sophisticated
-        # company_name = request.job_description.split('\n')[0].strip()  # First line usually contains company name
-        # role = request.job_description.split('\n')[1].strip()  # Second line usually contains role
-
-        # Clean up company name and role for file naming
-        # company_name = re.sub(r'[^a-zA-Z0-9]', '_', company_name)
-        # role = re.sub(r'[^a-zA-Z0-9]', '_', role)
-
         # Create file names
         resume_filename = f"{fname}_{lname}_{job['company']}_resume.pdf"
         cover_letter_filename = f"{fname}_{lname}_{job['company']}_cover_letter.pdf"
 
-        # 2. Call OpenAI to customize resume
+        # 2. Prepare messages for parallel processing
         resume_messages = [
             {
                 "role": "system",
@@ -781,13 +791,6 @@ async def customize_documents(request: CustomizeDocumentsRequest):
             }
         ]
 
-        resume_response = await client.chat.completions.create(
-            model="gpt-4o",
-            messages=resume_messages,
-            max_tokens=2000
-        )
-        
-        # 3. Call OpenAI to generate cover letter
         cl_messages = [
             {
                 "role": "system",
@@ -803,17 +806,30 @@ async def customize_documents(request: CustomizeDocumentsRequest):
             }
         ]
 
-        cl_response = await client.chat.completions.create(
-            model="gpt-4o",
-            messages=cl_messages,
-            max_tokens=500
+        # 3. Run OpenAI calls in parallel
+        async def generate_document(messages, is_resume=True):
+            response = await client.chat.completions.create(
+                model="gpt-3.5-turbo",  # Using a faster model
+                messages=messages,
+                max_tokens=2000 if is_resume else 500
+            )
+            return response.choices[0].message.content
+
+        resume_content, cl_content = await asyncio.gather(
+            generate_document(resume_messages, True),
+            generate_document(cl_messages, False)
         )
 
-        # 4. Convert responses to PDFs
-        resume_pdf = await get_pdf_from_latex(resume_response.choices[0].message.content)
-        cl_pdf = await get_pdf_from_latex(cl_response.choices[0].message.content)
+        # 4. Convert responses to PDFs in parallel
+        async def convert_to_pdf(content):
+            return await get_pdf_from_latex(content)
 
-        # Encode PDFs
+        resume_pdf, cl_pdf = await asyncio.gather(
+            convert_to_pdf(resume_content),
+            convert_to_pdf(cl_content)
+        )
+
+        # 5. Encode PDFs
         resume_b64 = base64.b64encode(resume_pdf).decode()
         cl_b64 = base64.b64encode(cl_pdf).decode()
 
