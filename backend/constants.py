@@ -13,9 +13,10 @@ Resume Requirements:
 - Use only basic LaTeX formatting: \\textbf, \\underline, \\itemize, etc.
 - No graphics, tables, or colored elements
 - Structure:
-  1. Contact Information (CRITICAL - MUST include all three):
+  1. Contact Information (CRITICAL - MUST include all four):
      * Name (bolded, at top)
      * Email (jeffreyezugwu\\@gmail.com)
+     * Phone (661-483-6808)
      * Address (Palmdale, CA)
   2. Professional Summary (2-3 sentences tailored to the role)
   3. Technical Skills (grouped using \\itemize)
@@ -194,7 +195,8 @@ Example of proper contact information format:
 ```latex
 \\textbf{Jeffrey Ezugwu}\\\\
 Palmdale, CA\\\\
-jeffreyezugwu\\@gmail.com
+jeffreyezugwu\\@gmail.com\\\\
+661-483-6808
 ```
 
 Input:
