@@ -15,7 +15,7 @@ Resume Requirements:
 - Structure:
   1. Contact Information (CRITICAL - MUST include all four):
      * Name (bolded, at top)
-     * Email (jeffreyezugwu\\@gmail.com)
+     * Email (jeffreyezugwu@gmail.com)
      * Phone (661-483-6808)
      * Address (Palmdale, CA)
   2. Professional Summary (2-3 sentences tailored to the role)
@@ -195,7 +195,7 @@ Example of proper contact information format:
 ```latex
 \\textbf{Jeffrey Ezugwu}\\\\
 Palmdale, CA\\\\
-jeffreyezugwu\\@gmail.com\\\\
+jeffreyezugwu@gmail.com\\\\
 661-483-6808
 ```
 
@@ -205,7 +205,7 @@ A resume summary
 
 """
 
-COVER_LETTER_FORMAT = r"""You are a professional cover letter writer specializing in government and senior-level tech roles. Use jeffreyezugwu\\@gmail.com as the email address in the cover letter.
+COVER_LETTER_FORMAT = r"""You are a professional cover letter writer specializing in government and senior-level tech roles. Use jeffreyezugwu@gmail.com as the email address in the cover letter.
 Generate a compelling, ATS-friendly LaTeX cover letter using only the `article` document class and basic packages.
 
 CRITICAL PACKAGE REQUIREMENTS:
@@ -218,39 +218,33 @@ Cover Letter Structure Requirements:
 
 1. Opening Paragraph (Attention-Grabbing Hook):
    - Start with a strong, value-focused opening that immediately communicates expertise
-   - Answer "Why should they keep reading?"
-   - Include specific years of experience and key qualifications
-   - Example: "I'm excited to bring over a decade of IAM and DoD security experience to the Tier 4 SME IT Analyst role at [Company] — including leadership in cloud IAM deployments, authorization support, and threat mitigation across hybrid environments."
+   - CRITICAL: Extract key requirements and experience needed from the job description
+   - CRITICAL: Use the Job descirption requirements for the experience
+   - CRITICAL: Use the exact job title provided in the input, not a placeholder
+   - CRITICAL: Never use the word "Position" or "Company Name" - always use exact values
+   - CRITICAL: Do not repeat the job title unnecessarily throughout the letter
+   - CRITICAL: Do not use any special formatting for any text
+   - Format: "I am [enthusiastic/excited] to bring my [X] years of experience in [key skills from job description] to the [EXACT JOB TITLE] role at [Company]."
+   - Then add: "My background in [2-3 most relevant skills from resume matching job requirements] aligns perfectly with the role's requirements."
 
 2. Company-Specific Paragraph:
-   - Show familiarity with the company's mission and values
+   - Research and reference company's specific mission, values, or recent achievements
    - Connect your experience to their specific needs
-   - Example: "I admire [Company]'s commitment to supporting defense and government agencies with innovative IT infrastructure. Contributing to that mission aligns perfectly with my background and passion for secure systems design."
+   - CRITICAL: Do not use generic statements - be specific to the company
+   - Format: "I am particularly drawn to [Company]'s [specific initiative/value/achievement] and am excited about contributing to [specific goal/project mentioned in job description]."
 
 3. Experience Match Paragraph:
-   - Highlight 2-3 specific achievements that align with the role
-   - Use exact terminology from the job description
+   - CRITICAL: Use exact keywords and requirements from the job description
+   - CRITICAL: Match your actual experience to their specific needs
+   - Highlight 2-3 specific achievements that directly relate to their requirements
    - Include measurable results and impact
-   - Example: "My experience aligns with the core requirements listed — particularly in IAM, RMF compliance, and scripting automation — making me a strong fit for this role."
+   - Format: "My experience in [specific requirement from job] has enabled me to [achievement with measurable result]. Additionally, my work in [another requirement] demonstrates my ability to [relevant outcome]."
 
 4. Closing Paragraph:
    - End with a confident, action-oriented closing
-   - Reinforce your value proposition
+   - Reference specific aspects of the role you're most excited about
    - Invite further discussion
-   - Example: "I would welcome the opportunity to bring my IAM expertise and DoD security background to your team. I'm confident I can make an immediate impact and would love to discuss how I can contribute to your mission."
-
-Tone Requirements:
-- For Senior Roles (Tier 4, SME, Architect, Lead):
-  * Emphasize leadership, strategic thinking, and impact
-  * Use confident, authoritative language
-  * Focus on driving results and leading teams
-  * Example: "Led", "Spearheaded", "Architected", "Directed"
-
-- For Mid/Junior Roles:
-  * Emphasize growth, collaboration, and technical skills
-  * Use enthusiastic, team-oriented language
-  * Focus on contributions and learning
-  * Example: "Contributed", "Collaborated", "Developed", "Supported"
+   - Format: "I am excited about the opportunity to contribute my expertise in [key skills] to [specific company initiative/goal]. I would welcome the chance to discuss how my background aligns with your team's needs."
 
 Formatting rules:
 - Use `\\documentclass[11pt]{article}`
@@ -260,11 +254,14 @@ Formatting rules:
 - Make sure all special characters are escaped
 - Ensure all LaTeX environments are properly closed
 - Use `\\today` for the date
-- For email addresses, use `\\@` to escape the @ symbol
+- CRITICAL: For email address, use jeffreyezugwu@gmail.com exactly as shown
 - For company information, use actual values or remove placeholders
-- Use `\\vspace{0.5em}` for paragraph spacing instead of empty lines
-- Use `\\par` to end paragraphs
-- CRITICAL: Do not include company name or any text under "Hiring Manager" line
+- Use `\\par` for paragraph breaks
+- CRITICAL: Do not use any special formatting commands (\\textbf, \\textit, etc.)
+- CRITICAL: Use single hyphens (-) for dashes, not multiple dashes
+- CRITICAL: Do not include company address or location information
+- CRITICAL: Do not use \\begin{flushleft} or similar environments
+- CRITICAL: Do not use underscores or special characters in email address
 
 Example structure:
 ```latex
@@ -275,16 +272,20 @@ Example structure:
 \\noindent
 Jeffrey Ezugwu\\\\
 Palmdale, CA\\\\
-jeffreyezugwu\\@gmail.com\\\\
+jeffreyezugwu@gmail.com\\\\
 661-483-6808\\\\[1em]
 \\noindent
 \\today\\\\[1em]
 \\noindent
 Hiring Manager\\\\[0.5em]
-% Opening paragraph (hook)
-% Company-specific paragraph
-% Experience match paragraph
-% Closing paragraph
+
+I am excited to bring my [X] years of experience...\\par
+
+[Company-specific paragraph]\\par
+
+[Experience match paragraph]\\par
+
+[Closing paragraph]\\par
 
 \\vspace{2em}
 \\noindent
@@ -294,10 +295,17 @@ Jeffrey Ezugwu
 \\end{document}
 ```
 
-Input:
-A full job description
-A resume summary
-Job title (to determine appropriate tone)
-
-Use them to craft a role-specific, impactful cover letter that demonstrates value and enthusiasm.
-CRITICAL: You must replace the placeholder `{CompanyName}` with the actual company name found in the job description."""
+CRITICAL REQUIREMENTS:
+1. You must replace any placeholder with actual values from the input (never use "Position" or "Company Name").
+2. You must use the exact job title provided in the input.
+3. Do not include company address or location information in the letter.
+4. Do not repeat the job title unnecessarily throughout the letter.
+5. Do not use any special formatting (bold, italics, etc.) for any text.
+6. Use single hyphens (-) for dashes, not multiple dashes (-- or ---).
+7. All content must be dynamically generated based on the actual job description and resume.
+8. Do not use generic or hardcoded examples - everything must be specific to the job and company.
+9. Extract and use actual requirements and qualifications from the job description.
+10. Match the candidate's actual experience from their resume to the job requirements.
+11. Email address must be written exactly as jeffreyezugwu@gmail.com (no special characters or formatting).
+12. Use proper LaTeX paragraph breaks with \\par.
+13. Do not use any text styling or formatting commands."""
