@@ -50,7 +50,7 @@ CRITICAL ALIGNMENT REQUIREMENTS:
    - CRITICAL: Build each experience section from scratch to match the job description
    - CRITICAL: ALL roles (Microsoft, Air Force, Lockheed) must have EQUAL depth and detail
    - CRITICAL: Each bullet MUST include exact phrases and keywords from the job description
-   - CRITICAL: Each bullet MUST include measurable impact (e.g., "improved performance by 35%")
+   - CRITICAL: Each bullet MUST include measurable impact (e.g., "improved performance by 35\\%")
    - For each role:
      * Update job titles to match the target role's terminology when duties are reasonably similar
      * Example: "Cybersecurity Analyst" → "Security Engineer" if duties align
@@ -69,7 +69,7 @@ CRITICAL ALIGNMENT REQUIREMENTS:
      * Each bullet point must:
        * Begin with strong action verbs from the job description
        * Include exact tools/processes mentioned in the job description
-       * Show measurable results or impact (e.g., "reduced costs by 25%", "improved efficiency by 40%")
+       * Show measurable results or impact (e.g., "reduced costs by 25\\%", "improved efficiency by 40\\%")
        * Use the exact same terminology as the job description
    - CRITICAL: For ALL roles (Microsoft, Air Force, Lockheed):
      * MUST have EXACTLY 6-8 bullet points each
@@ -78,9 +78,9 @@ CRITICAL ALIGNMENT REQUIREMENTS:
      * MUST highlight ALL required skills and achievements
      * MUST quantify results using metrics from the job description
    - Examples:
-     * For a Project Manager role: "Led sprint planning sessions, managed Jira boards, coordinated with scrum teams, and facilitated stakeholder communication, resulting in 30% faster project delivery"
-     * For a Security Engineer role: "Implemented security controls, conducted vulnerability assessments, and managed security operations, reducing security incidents by 45%"
-     * For a DevOps role: "Automated deployment pipelines, managed Kubernetes clusters, and implemented CI/CD workflows, decreasing deployment time by 60%"
+     * For a Project Manager role: "Led sprint planning sessions, managed Jira boards, coordinated with scrum teams, and facilitated stakeholder communication, resulting in 30\\% faster project delivery"
+     * For a Security Engineer role: "Implemented security controls, conducted vulnerability assessments, and managed security operations, reducing security incidents by 45\\%"
+     * For a DevOps role: "Automated deployment pipelines, managed Kubernetes clusters, and implemented CI/CD workflows, decreasing deployment time by 60\\%"
 
 3. Skills Section (CRITICAL - Must Match Job Description):
    - Group skills into these categories:
@@ -214,6 +214,17 @@ CRITICAL PACKAGE REQUIREMENTS:
 - Do NOT use any other packages
 - Keep the document structure simple and clean
 
+CRITICAL CHARACTER ESCAPING:
+- Always escape special characters:
+  * \\& for ampersands (e.g., A\\&A, R\\&D)
+  * \\% for percentage signs
+  * \\# for hash symbols
+  * \\$ for dollar signs
+  * \\_ for underscores
+  * \\{ and \\} for curly braces
+  * \\~ for tildes
+  * \\^ for carets
+  * \\textbackslash for backslashes
 Cover Letter Structure Requirements:
 
 1. Opening Paragraph (Attention-Grabbing Hook):
@@ -234,11 +245,16 @@ Cover Letter Structure Requirements:
    - Format: "I am particularly drawn to [Company]'s [specific initiative/value/achievement] and am excited about contributing to [specific goal/project mentioned in job description]."
 
 3. Experience Match Paragraph:
-   - CRITICAL: Use exact keywords and requirements from the job description
-   - CRITICAL: Match your actual experience to their specific needs
-   - Highlight 2-3 specific achievements that directly relate to their requirements
-   - Include measurable results and impact
-   - Format: "My experience in [specific requirement from job] has enabled me to [achievement with measurable result]. Additionally, my work in [another requirement] demonstrates my ability to [relevant outcome]."
+   - CRITICAL: Focus ONLY on skills/requirements from the job description
+   - CRITICAL: Use company names from resume but describe achievements based on job requirements
+   - CRITICAL: For each company mentioned, highlight ONLY achievements that match job requirements
+   - CRITICAL: Do not include any skills/experience not mentioned in job description
+   - CRITICAL: Highlight 2-3 specific achievements that directly relate to their requirements
+   - Format: "At [Company from Resume], I leveraged [key requirement from job] to deliver [achievement matching job needs]. While at [Another Company from Resume], I utilized [different job requirement] to [outcome aligned with role]."
+   - Example: "At Microsoft, I leveraged Python and machine learning to deliver predictive models with 95\\% accuracy. While at Lockheed Martin, I utilized cloud architecture to reduce infrastructure costs by 30\\%."
+   - CRITICAL: Only mention skills/technologies explicitly required in job description
+   - CRITICAL: Quantify impact in terms relevant to job requirements
+   - CRITICAL: Keep focus narrow and targeted to exact job needs
 
 4. Closing Paragraph:
    - End with a confident, action-oriented closing
@@ -301,7 +317,7 @@ CRITICAL REQUIREMENTS:
 3. Do not include company address or location information in the letter.
 4. Do not repeat the job title unnecessarily throughout the letter.
 5. Do not use any special formatting (bold, italics, etc.) for any text.
-6. Use single hyphens (-) for dashes, not multiple dashes (-- or ---).
+6. Use single hyphens (-) for dashes, not multiple dashes.
 7. All content must be dynamically generated based on the actual job description and resume.
 8. Do not use generic or hardcoded examples - everything must be specific to the job and company.
 9. Extract and use actual requirements and qualifications from the job description.

@@ -590,7 +590,7 @@ async def clean_latex_content_using_llm(latex_content: str) -> str:
             Follow these critical rules:
             1. Escape all special characters:
                - \\& for ampersands (e.g., A\\&A, R\\&D)
-               - \\% for percentage signs
+               - \\% for percentage signs (CRITICAL: Every percentage sign must be escaped)
                - \\# for hash symbols
                - \\$ for dollar signs
                - \\_ for underscores
@@ -618,6 +618,7 @@ async def clean_latex_content_using_llm(latex_content: str) -> str:
                - Close all itemize environments
                - Use \\par for paragraph breaks
                - Use \\vspace{1em} for vertical spacing
+               - CRITICAL: Ensure all percentage signs are properly escaped as \\%
             
             5. Keep only essential packages:
                - geometry (for margins)
@@ -651,6 +652,11 @@ async def clean_latex_content_using_llm(latex_content: str) -> str:
             raise ValueError("Cleaned content missing document class")
         if "\\end{document}" not in cleaned_content:
             raise ValueError("Cleaned content missing document end")
+            
+        # Additional check for percentage signs
+        if "%" in cleaned_content and "\\%" not in cleaned_content:
+            logger.warning("Found unescaped percentage signs in LaTeX content")
+            cleaned_content = cleaned_content.replace("%", "\\%")
             
         return cleaned_content
         
