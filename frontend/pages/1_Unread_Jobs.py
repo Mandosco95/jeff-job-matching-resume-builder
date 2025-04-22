@@ -15,7 +15,6 @@ API_URL = os.getenv("API_URL", "http://localhost:8000")
 
 st.title("Unread Jobs")
 
-@st.cache_data(ttl=300)  # Cache for 5 minutes
 def fetch_unread_jobs():
     """Fetch unread jobs from the API with caching"""
     try:
@@ -144,6 +143,8 @@ def display_jobs(jobs_data):
                                     
                                     if response.status_code == 200:
                                         st.success("Successfully applied for the job!")
+                                        # Remove the documents from session state to prevent re-application
+                                        del st.session_state[state_key]
                                         st.rerun()
                                     else:
                                         st.error("Failed to apply for the job")
@@ -202,19 +203,7 @@ def display_jobs(jobs_data):
                 st.markdown("---")
 
 # Main execution
-if 'refresh_jobs' not in st.session_state:
-    st.session_state.refresh_jobs = True
-
-if st.session_state.refresh_jobs:
-    with st.spinner("Fetching unread jobs..."):
-        unread_jobs_data = fetch_unread_jobs()
-        if unread_jobs_data["jobs"]:
-            display_jobs(unread_jobs_data)
-        else:
-            st.info("No unread jobs found.")
-    st.session_state.refresh_jobs = False
-else:
-    # If we have cached data, use it
+with st.spinner("Fetching unread jobs..."):
     unread_jobs_data = fetch_unread_jobs()
     if unread_jobs_data["jobs"]:
         display_jobs(unread_jobs_data)

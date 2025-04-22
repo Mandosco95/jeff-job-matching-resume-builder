@@ -599,12 +599,11 @@ async def clean_latex_content_using_llm(latex_content: str) -> str:
                - \\^ for carets
                - \\textbackslash for backslashes
             
-            2. Handle placeholders properly:
-               - Replace [Company Name] with \\textbf{Company Name}
-               - Replace [Company Address] with \\textbf{Company Address}
-               - Replace [City, State ZIP] with \\textbf{City, State ZIP}
-               - Replace [Hiring Manager] with \\textbf{Hiring Manager}
-               - Replace [Position] with \\textbf{Position}
+            2. CRITICAL: Do not modify any company names or job titles
+               - Keep all company names exactly as they appear
+               - Keep all job titles exactly as they appear
+               - Do not add any formatting to company names or job titles
+               - Do not replace actual values with placeholders
             
             3. Ensure document completeness:
                - Must start with \\documentclass
@@ -802,16 +801,17 @@ async def customize_documents(request: CustomizeDocumentsRequest):
                 Job Title: {job['title']}
                 Job Description: {request.job_description}
                 Candidate Resume: {json.dumps(user_resume['parsed_data'])}
-                Please write a professional cover letter in LaTeX format, using the provided Company Name ('{job['company']}') and Job Title ('{job['title']}'). Ensure the placeholder '{{CompanyName}}' in the template is replaced with '{job['company']}'. """
+                Please write a professional cover letter in LaTeX format. Make sure to use the exact job title '{job['title']}' and company name '{job['company']}' in the letter. Do not use any placeholders like 'Position' or 'Company Name'."""
             }
         ]
 
         # 3. Run OpenAI calls in parallel
         async def generate_document(messages, is_resume=True):
             response = await client.chat.completions.create(
-                model="gpt-3.5-turbo",  # Using a faster model
+                model="gpt-4-turbo-preview",  # Using GPT-4 for better quality
                 messages=messages,
-                max_tokens=2000 if is_resume else 500
+                temperature=0.7,
+                max_tokens=2000 if is_resume else 1000
             )
             return response.choices[0].message.content
 
@@ -890,17 +890,18 @@ async def apply_for_job(request: JobApplicationRequest):
             "resume_text": request.resume_text,
             "cover_letter_text": request.cover_letter_text,
             "application_date": request.application_date,
-            "status": "applied"  # Can be extended to track application status
+            "status": "applied"
         }
         
         # Store in applications collection
         result = await db.applications.insert_one(application_data)
         
-        # Also mark the job as read since user has applied
-        await db.jobs.update_one(
-            {"_id": ObjectId(request.job_id)},
-            {"$set": {"is_read": True}}
-        )
+        # Delete the job from jobs collection after successful application
+        delete_result = await db.jobs.delete_one({"_id": ObjectId(request.job_id)})
+        
+        if delete_result.deleted_count != 1:
+            logger.error(f"Failed to delete job after application for job ID: {request.job_id}")
+            raise HTTPException(status_code=500, detail="Failed to delete job after application")
         
         return {
             "message": "Successfully applied for the job",
