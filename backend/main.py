@@ -387,44 +387,74 @@ async def search_and_store_jobs(params: JobSearchParams):
         # Convert jobs to a list of dictionaries and add timestamp
         jobs_list = jobs.to_dict(orient='records')
         timestamp = datetime.utcnow()
-        
-        # Enhance job records with additional metadata and handle date serialization
+        # Print number of jobs found
+        logger.info(f"Number of jobs found: {len(jobs_list)}")
+        # Process jobs in batches of 5
+        batch_size = 5
         enhanced_jobs = []
-        for job in jobs_list:
-            # Convert any date objects to datetime for MongoDB compatibility
-            job_dict = dict(job)  # Create a copy of the job dictionary
-            for key, value in job_dict.items():
-                if isinstance(value, date) and not isinstance(value, datetime):
-                    job_dict[key] = datetime.combine(value, datetime.min.time())
+        
+        for i in range(0, len(jobs_list), batch_size):
+            batch = jobs_list[i:i + batch_size]
+            batch_jobs = []
             
-            job_dict['timestamp'] = timestamp
-            job_dict['search_term'] = params.search_term
-            job_dict['search_location'] = params.location
-            job_dict['is_read'] = False  # Set is_read to False by default for new jobs
+            # Prepare batch data
+            for job in batch:
+                # Convert any date objects to datetime for MongoDB compatibility
+                job_dict = dict(job)  # Create a copy of the job dictionary
+                for key, value in job_dict.items():
+                    if isinstance(value, date) and not isinstance(value, datetime):
+                        job_dict[key] = datetime.combine(value, datetime.min.time())
+                
+                job_dict['timestamp'] = timestamp
+                job_dict['search_term'] = params.search_term
+                job_dict['search_location'] = params.location
+                job_dict['is_read'] = False  # Set is_read to False by default for new jobs
+                batch_jobs.append(job_dict)
             
-            # Call LLM to analyze job details and determine if remote
+            # Prepare batch message for LLM
+            batch_content = "\n\n".join([
+                f"Job {idx + 1}:\nTitle: {job.get('title', '')}\nLocation: {job.get('location', '')}\nDescription: {job.get('description', '')}\nJob Type: {job.get('job_type', '')}"
+                for idx, job in enumerate(batch_jobs)
+            ])
+            
+            # Call LLM to analyze batch of jobs
             remote_check_messages = [
                 {
                     "role": "system", 
-                    "content": "You are an expert at analyzing job postings to determine if they are remote positions. Analyze the job details and respond with only 'true' if the job appears to be remote, or 'false' if not remote."
+                    "content": "You are an expert at analyzing job postings to determine if they are remote positions. For each job in the list, analyze the details and respond with a JSON array of booleans indicating if each job is remote (true) or not (false). Example response format: [true, false, true, false, true]. Return ONLY the JSON array, nothing else."
                 },
                 {
                     "role": "user",
-                    "content": f"Job Title: {job_dict.get('title', '')}\nLocation: {job_dict.get('location', '')}\nDescription: {job_dict.get('description', '')}\nJob Type: {job_dict.get('job_type', '')}"
+                    "content": batch_content
                 }
             ]
             
-            remote_response = await client.chat.completions.create(
-                model="gpt-4",
-                messages=remote_check_messages,
-                max_tokens=50
-            )
-            
-            is_remote = remote_response.choices[0].message.content.strip().lower() == 'true'
-            job_dict['is_remote'] = is_remote
-            
-            # Store all jobs, not just remote ones
-            enhanced_jobs.append(job_dict)
+            try:
+                remote_response = await client.chat.completions.create(
+                    model="gpt-4",
+                    messages=remote_check_messages,
+                    max_tokens=200
+                )
+                
+                # Parse the response
+                response_text = remote_response.choices[0].message.content.strip()
+                # Remove any markdown code block markers if present
+                response_text = response_text.replace('```json', '').replace('```', '').strip()
+                remote_statuses = json.loads(response_text)
+                # Print remote statuses for debugging
+                logger.info(f"Remote statuses for batch: {remote_statuses}")
+                # Update jobs with remote status
+                for job, is_remote in zip(batch_jobs, remote_statuses):
+                    
+                    job['is_remote'] = is_remote
+                    enhanced_jobs.append(job)
+                    
+            except Exception as e:
+                logger.error(f"Error processing batch with LLM: {str(e)}")
+                # If LLM call fails, add jobs without remote status
+                for job in batch_jobs:
+                    job['is_remote'] = False
+                    enhanced_jobs.append(job)
 
         # Store in MongoDB
         if enhanced_jobs:
@@ -481,13 +511,16 @@ async def get_recent_jobs(
                 logger.info("Querying for read jobs")
             else:
                 # For unread jobs, include everything except explicitly marked as read
-                query["$or"] = [
-                    {"is_read": False},
-                    {"is_read": {"$exists": False}},
-                    {"is_read": None},
-                    {"$and": [
-                        {"is_read": {"$exists": True}},
-                        {"is_read": {"$ne": True}}
+                query["$and"] = [
+                    {"is_remote": True},
+                    {"$or": [
+                        {"is_read": False},
+                        {"is_read": {"$exists": False}},
+                        {"is_read": None},
+                        {"$and": [
+                            {"is_read": {"$exists": True}},
+                            {"is_read": {"$ne": True}}
+                        ]}
                     ]}
                 ]
                 logger.info("Querying for unread jobs")
