@@ -78,17 +78,34 @@ def display_jobs(jobs_data):
                     st.markdown(f"**Company:** {job.get('company', 'N/A')}")
                     st.markdown(f"**Location:** {job.get('location', 'N/A')}")
                     
-                    # Add Generate CV button and download links
-                    col1a, col1b, col1c, col1d = st.columns([1, 1, 1, 1])
-                    with col1a:
-                        if st.button("Generate CV", key=f"gen_cv_{job.get('_id', '')}"):
+                    # Create a form for each job
+                    with st.form(key=f"form_{job.get('_id', '')}"):
+                        # Add text area for additional instructions
+                        additional_instructions = st.text_area(
+                            "Additional Instructions for CV/Cover Letter",
+                            key=f"instructions_{job.get('_id', '')}",
+                            help="Add any specific instructions or requirements for customizing your CV and cover letter for this job"
+                        )
+                        
+                        # Add toggle for document selection
+                        col1e, col1f, col1g = st.columns([1, 1, 1])
+                        with col1e:
+                            apply_to_cv = st.checkbox("Apply to CV", key=f"apply_cv_{job.get('_id', '')}", value=True)
+                        with col1f:
+                            apply_to_cl = st.checkbox("Apply to Cover Letter", key=f"apply_cl_{job.get('_id', '')}", value=True)
+                        
+                        # Add Generate CV button
+                        if st.form_submit_button("Generate CV"):
                             with st.spinner('Generating customized CV and Cover Letter...'):
                                 try:
                                     response = requests.post(
                                         f"{API_URL}/customize-documents",
                                         json={
                                             "job_description": job.get('description', ''),
-                                            "id": job.get('id', '')
+                                            "id": job.get('id', ''),
+                                            "additional_instructions": additional_instructions,
+                                            "apply_to_cv": apply_to_cv,
+                                            "apply_to_cl": apply_to_cl
                                         }
                                     )
                                     
@@ -104,28 +121,12 @@ def display_jobs(jobs_data):
                                 except Exception as e:
                                     st.error(f"Error generating documents: {str(e)}")
                     
-                    # Add mark as read button
-                    with col1d:
-                        if st.button("Mark as Read", key=f"mark_read_{job.get('_id', '')}"):
-                            try:
-                                response = requests.post(
-                                    f"{API_URL}/api/jobs/mark-status",
-                                    json={
-                                        "job_id": str(job.get('_id')),
-                                        "is_read": True
-                                    }
-                                )
-                                if response.status_code == 200:
-                                    st.success("Job marked as read!")
-                                    st.rerun()
-                                else:
-                                    st.error("Failed to mark job as read")
-                            except Exception as e:
-                                st.error(f"Error marking job as read: {str(e)}")
-                        
-                        # Check if documents are generated for this job
-                        state_key = f"docs_{job.get('_id', '')}"
-                        if state_key in st.session_state:
+                    # Add download links if documents are available
+                    state_key = f"docs_{job.get('_id', '')}"
+                    if state_key in st.session_state:
+                        data = st.session_state[state_key]
+                        col1a, col1b, col1c, col1d = st.columns([1, 1, 1, 1])
+                        with col1a:
                             if st.button("Applied", key=f"applied_{job.get('_id', '')}"):
                                 try:
                                     # Get the generated documents
@@ -150,26 +151,26 @@ def display_jobs(jobs_data):
                                         st.error("Failed to apply for the job")
                                 except Exception as e:
                                     st.error(f"Error applying for job: {str(e)}")
-                        else:
-                            st.button("Applied", key=f"applied_{job.get('_id', '')}", disabled=True, 
-                                     help="Generate CV and Cover Letter first")
-                    
-                    # Add download links if documents are available
-                    state_key = f"docs_{job.get('_id', '')}"
-                    if state_key in st.session_state:
-                        data = st.session_state[state_key]
-                        with col1b:
-                            cv_bytes = base64.b64decode(data['cv_content'])
-                            st.markdown(
-                                download_pdf(cv_bytes, data.get('resume_filename', 'customized_cv.pdf'), "📄 Download CV"),
-                                unsafe_allow_html=True
-                            )
-                        with col1c:
-                            cl_bytes = base64.b64decode(data['cover_letter_content'])
-                            st.markdown(
-                                download_pdf(cl_bytes, data.get('cover_letter_filename', 'cover_letter.pdf'), "📝 Download Cover Letter"),
-                                unsafe_allow_html=True
-                            )
+                        
+                        # Display download links for available documents
+                        if 'cv_content' in data:
+                            with col1b:
+                                cv_bytes = base64.b64decode(data['cv_content'])
+                                st.markdown(
+                                    download_pdf(cv_bytes, data.get('resume_filename', 'customized_cv.pdf'), "📄 Download CV"),
+                                    unsafe_allow_html=True
+                                )
+                        
+                        if 'cover_letter_content' in data:
+                            with col1c:
+                                cl_bytes = base64.b64decode(data['cover_letter_content'])
+                                st.markdown(
+                                    download_pdf(cl_bytes, data.get('cover_letter_filename', 'cover_letter.pdf'), "📝 Download Cover Letter"),
+                                    unsafe_allow_html=True
+                                )
+                    else:
+                        st.button("Applied", key=f"applied_{job.get('_id', '')}", disabled=True, 
+                                 help="Generate CV and Cover Letter first")
                     
                     # Show job details in an expander
                     with st.expander("Show Details"):

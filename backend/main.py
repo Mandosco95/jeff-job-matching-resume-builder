@@ -121,6 +121,9 @@ class ChatRequest(BaseModel):
 class CustomizeDocumentsRequest(BaseModel):
     job_description: str
     id: str
+    additional_instructions: Optional[str] = None
+    apply_to_cv: bool = True
+    apply_to_cl: bool = True
 
 class MarkJobStatusRequest(BaseModel):
     job_id: str
@@ -790,9 +793,13 @@ async def customize_documents(request: CustomizeDocumentsRequest):
             },
             {
                 "role": "user",
-                "content": f"""Job Description: {request.job_description}
+                "content": f"""CRITICAL INSTRUCTIONS:
+                {request.additional_instructions if request.apply_to_cv and request.additional_instructions else 'No additional instructions provided.'}
+
+                Job Description: {request.job_description}
                 Original Resume data: {json.dumps(user_resume['parsed_data'])}
-                Please create a professional, ATS-friendly resume following the format above."""
+                
+                Please create a professional, ATS-friendly resume following the format above. You MUST strictly follow any additional instructions provided above."""
             }
         ]
 
@@ -803,11 +810,15 @@ async def customize_documents(request: CustomizeDocumentsRequest):
             },
             {
                 "role": "user",
-                "content": f"""Company Name: {job['company']}
+                "content": f"""CRITICAL INSTRUCTIONS:
+                {request.additional_instructions if request.apply_to_cl and request.additional_instructions else 'No additional instructions provided.'}
+
+                Company Name: {job['company']}
                 Job Title: {job['title']}
                 Job Description: {request.job_description}
                 Candidate Resume: {json.dumps(user_resume['parsed_data'])}
-                Please write a professional cover letter in LaTeX format. Make sure to use the exact job title '{job['title']}' and company name '{job['company']}' in the letter. Do not use any placeholders like 'Position' or 'Company Name'."""
+                
+                Please write a professional cover letter in LaTeX format. You MUST strictly follow any additional instructions provided above. Make sure to use the exact job title '{job['title']}' and company name '{job['company']}' in the letter. Do not use any placeholders like 'Position' or 'Company Name'."""
             }
         ]
 
@@ -821,31 +832,52 @@ async def customize_documents(request: CustomizeDocumentsRequest):
             )
             return response.choices[0].message.content
 
-        resume_content, cl_content = await asyncio.gather(
-            generate_document(resume_messages, True),
-            generate_document(cl_messages, False)
-        )
-
+        # Only generate documents that are requested
+        tasks = []
+        # If neither is selected, generate both
+        if not request.apply_to_cv and not request.apply_to_cl:
+            tasks.append(generate_document(resume_messages, True))
+            tasks.append(generate_document(cl_messages, False))
+        else:
+            if request.apply_to_cv:
+                tasks.append(generate_document(resume_messages, True))
+            if request.apply_to_cl:
+                tasks.append(generate_document(cl_messages, False))
+        
+        if not tasks:
+            raise HTTPException(status_code=400, detail="At least one document type must be selected")
+        
+        results = await asyncio.gather(*tasks)
+        
         # 4. Convert responses to PDFs in parallel
         async def convert_to_pdf(content):
             return await get_pdf_from_latex(content)
-
-        resume_pdf, cl_pdf = await asyncio.gather(
-            convert_to_pdf(resume_content),
-            convert_to_pdf(cl_content)
-        )
-
+        
+        pdf_tasks = []
+        for content in results:
+            pdf_tasks.append(convert_to_pdf(content))
+        
+        pdfs = await asyncio.gather(*pdf_tasks)
+        
         # 5. Encode PDFs
-        resume_b64 = base64.b64encode(resume_pdf).decode()
-        cl_b64 = base64.b64encode(cl_pdf).decode()
-
-        return {
+        response_data = {
             "success": True,
-            "cv_content": resume_b64,
-            "cover_letter_content": cl_b64,
             "resume_filename": resume_filename,
             "cover_letter_filename": cover_letter_filename
         }
+        
+        # If neither was selected, include both documents
+        if not request.apply_to_cv and not request.apply_to_cl:
+            response_data["cv_content"] = base64.b64encode(pdfs[0]).decode()
+            response_data["cover_letter_content"] = base64.b64encode(pdfs[1]).decode()
+        else:
+            # Otherwise, include only the selected documents
+            if request.apply_to_cv:
+                response_data["cv_content"] = base64.b64encode(pdfs[0]).decode()
+            if request.apply_to_cl:
+                response_data["cover_letter_content"] = base64.b64encode(pdfs[-1]).decode()
+        
+        return response_data
 
     except Exception as e:
         logger.error(f"Error customizing documents: {str(e)}")
